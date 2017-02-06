@@ -1,0 +1,25 @@
+APP := camera_test
+
+SRCS := \
+	main.cpp
+
+OBJS := $(SRCS:.cpp=.o)
+
+#CPPFLAGS += \
+#	-I"$(ARGUS_UTILS_DIR)"
+
+#LDFLAGS += \
+#	-lpthread \
+#	-lv4l2 -lEGL -lGLESv2 -lX11 \
+#	-lnvbuf_utils -lnvjpeg -lnveglstream_camconsumer -largus
+
+all: $(APP)
+
+%.o: %.cpp
+	$(CPP) -c $< -o $@
+
+$(APP): $(OBJS)
+	$(CPP) -o $@ $(OBJS)
+
+clean:
+	rm -rf *.o $(APP)

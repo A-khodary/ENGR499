@@ -1,0 +1,5 @@
+I'm trying to get the camera to take a picture.
+I'm using code from the "Get Started with the JetPack Camera API" video at 48:11.
+Makefile and Rules.mk are taken from the tegra_multimedia_api samples.
+
+I am having trouble with include files and directories.
