@@ -7,7 +7,7 @@
 #include <EGLStream/EGLStream.h>
 #include <EGLStream/NV/ImageNativeBuffer.h>
 
-#include <NVEglRenderer.h>
+#include <NvEglRenderer.h>
 #include <NvJpegEncoder.h>
 
 #include <unistd.h>
