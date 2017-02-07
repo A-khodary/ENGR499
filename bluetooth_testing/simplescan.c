@@ -6,17 +6,20 @@
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
 
-//typedef struct {
+
+//typedef struct {
 //	uint8_t b[6];
 //} __attribute__((packed)) bdaddr_t;
 
-/*	The basic data structure used to specify a Bluetooth device address is the
+/*
+	The basic data structure used to specify a Bluetooth device address is the
 bdaddr_t.All Bluetooth addresses in BlueZ will be stored and manipulated as
 bdaddr_t structures.
 	BlueZ provides two convenience functions to convert between strings and
 bdaddr_t structures.
 */
-//int str2ba(const char *str, bdaddr_t *ba);
+
+//int str2ba(const char *str, bdaddr_t *ba);
 //int ba2str(const bdaddr_t *ba, char *str);
 
 /*
@@ -48,7 +51,9 @@ int main(int argc, char **argv)
 	*/
 	//int dev_id = hci_devid("01:23:45:67:89:AB");
 	dev_id = hci_get_route(NULL);
-/*		Most Bluetooth operations require the use of an open socket.
+
+/*
+		Most Bluetooth operations require the use of an open socket.
 	hci_open_dev is a convenience function that opens a Bluetooth socket with
 	the specified resource number[2]. To be clear, the socket opened by
 	hci_open_dev represents a connection to the microcontroller on the
