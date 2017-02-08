@@ -88,7 +88,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	/*		After choosing the local Bluetooth adapter to use and allocating system
+	/*
+		After choosing the local Bluetooth adapter to use and allocating system
 	resources, the program is ready to scan for nearby Bluetooth devices.
 		In the example, hci_inquiry performs a Bluetooth device discovery and
 	returns a list of detected devices and some basic information about them in
@@ -119,14 +120,19 @@ int main(int argc, char **argv)
 	// 0: the results of previous inquiries may be returned, even if the
 	//		devices aren't in range anymore
 	flags = IREQ_CACHE_FLUSH;
+	printf("Searching for bluetooth device...\n");
 	ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
 
 	num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
-	if (num_rsp < 0)
+	if (num_rsp < 0) {
+		printf("Failed!\n");
 		perror("hci_inquiry");
+	} else
+		printf("Complete!\n");
 
 	/*
-		Once a list of nearby Bluetooth devices and their addresses has been
+
+		Once a list of nearby Bluetooth devices and their addresses has been
 	found, the program determines the user-friendly names associated with those
 	addresses and presents them to the user.
 	*/
