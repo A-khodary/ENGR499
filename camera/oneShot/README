@@ -1,0 +1,9 @@
+To build oneShot:
+
+mkdir build
+cd build
+cmake ..
+make
+
+Disclaimer: This doesn't work yet.  The cmake does run, but it does not produce
+a fully working makefile.
