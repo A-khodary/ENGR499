@@ -29,6 +29,7 @@ cmake_minimum_required (VERSION 2.6)
 project(argus_oneshot)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_MODULE_PATH}")
+#set(CMAKE_MODULE_PATH "/home/ubuntu/tegra_multimedia_api/argus/cmake" "${CMAKE_MODULE_PATH}")
 
 find_package(Argus REQUIRED)
 
@@ -38,7 +39,7 @@ set(SOURCES
 
 include_directories(
     ${ARGUS_INCLUDE_DIR}
-    ${CMAKE_SOURCE_DIR}/samples/utils
+    /home/ubuntu/tegra_multimedia_api/argus/samples/utils
     )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

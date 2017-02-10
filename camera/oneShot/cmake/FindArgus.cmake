@@ -33,8 +33,13 @@
 
 find_package(PkgConfig)
 
+#set(CMAKE_INCLUDE_PATH "/home/ubuntu/tegra_multimedia_api/argus/include")
+
 find_path(ARGUS_INCLUDE_DIR Argus/Argus.h
-          HINTS /home/tegra_multimedia_api/argus/include)
+          PATHS /home/ubuntu/tegra_multimedia_api/argus/include)
+
+#find_path(ARGUS_INCLUDE_DIR Argus/Argus.h
+#  $(CMAKE_INCLUDE_PATH))
 
 find_library(ARGUS_LIBRARY NAMES argus
              HINTS /usr/lib/${CMAKE_LIBRARY_ARCHITECTURE}/tegra)

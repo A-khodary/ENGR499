@@ -1,5 +1,6 @@
-To build oneShot:
+To build oneShot: sh run.sh
 
+Start in oneShot directory
 mkdir build
 cd build
 cmake ..
