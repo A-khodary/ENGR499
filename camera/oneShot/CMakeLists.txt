@@ -39,14 +39,14 @@ set(SOURCES
 
 include_directories(
     ${ARGUS_INCLUDE_DIR}
-    /home/ubuntu/tegra_multimedia_api/argus/samples/utils
+    #/home/ubuntu/tegra_multimedia_api/argus/samples/utils
     )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_link_libraries(${PROJECT_NAME}
     ${ARGUS_LIBRARIES}
-    argussampleutils
+    #argussampleutils
     )
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
