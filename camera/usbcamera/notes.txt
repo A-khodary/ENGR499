@@ -1,0 +1,16 @@
+Useful Sites:
+https://devtalk.nvidia.com/default/topic/847299/problem-with-opencv/
+(that site contains the error I was getting with VideoCapture(0): 
+HIGHGUI ERROR: V4L2: Pixel format of incoming image is unsupported by OpenCV)
+https://devtalk.nvidia.com/default/topic/966704/jetson-tx1-onboard-camera-does-it-really-work-/
+http://stackoverflow.com/questions/15787967/capturing-h-264-stream-from-camera-with-gstreamer
+https://www.e-consystems.com/Articles/Camera/opencv-jetson-using-13MP-MIPI-camera.asp
+(1.2.5 possibly useful)
+https://devtalk.nvidia.com/default/topic/949184/how-to-use-ov5693-v4l2-driver-in-l4t-24-1/
+http://www.jetsonhacks.com/2014/10/16/gstreamer-xvimage/
+https://devtalk.nvidia.com/default/topic/929483/opencv-videocapture-usb-camera/?offset=2
+(This is the thread where I posted as Bcssd1234)
+
+Notes:
+OpenCV VideoCapture seems to be the way to go.  Using gstreamer in combination is common too.
+Run the script to compile the code.
