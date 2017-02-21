@@ -1,7 +1,9 @@
 #include "lib/config.h"
 #include "lib/scan.h"
+#include "lib/rfcomm.h"
 
 void print_menu();
+int prompt_device(char*, int);
 
 int main(int argc, char **argv)
 {
@@ -13,6 +15,9 @@ int main(int argc, char **argv)
 
 	char* input = (char*)malloc(sizeof(char) * 10);
 	int choice = 1;
+
+	int device_choice = 0;
+	char* dest = malloc(sizeof(char) * BT_ADDR_SIZE);
 
 	while (choice != 0) {
 		if (choice != 1) {
@@ -43,15 +48,37 @@ int main(int argc, char **argv)
 				}
 			}
 			choice = -1;
+
+			device_choice = prompt_device(input, num_rsp);
+			if (device_choice <= 0) {
+				printf("No available device\n");
+				choice = 1;
+			}
+			else {
+				ba2str(&(ii + device_choice - 1)->bdaddr, dest);
+			}
 			break;
 		case 2:
 			if (ii == NULL || num_rsp == -1) {
 				printf("Should search before sending data\n");
 				choice = 1;
-				continue;
+				break;
+			}
+			if (device_choice <= 0) {
+				device_choice = prompt_device(input, num_rsp);
 			}
 			break;
 		case 3:
+			if (ii == NULL || num_rsp == -1) {
+				printf("Should search before sending data\n");
+				choice = 1;
+				break;
+			}
+			if (device_choice <= 0) {
+				device_choice = prompt_device(input, num_rsp);
+			}
+			break;
+		case -1:
 			break;
 		default:
 			choice = 0;
@@ -61,6 +88,7 @@ int main(int argc, char **argv)
 
 	free(ii);
 	free(input);
+	free(dest);
 	close(sock); // a system call that is used to close an open file descriptor
 	return 0;
 }
@@ -71,5 +99,23 @@ void print_menu() {
 	printf("2. Send data to other devices\n");
 	printf("3. Wait for data from other devices\n");
 	printf("4. Exit\n");
-	printf("Enter your choice (all invalid input is considered exit): ");
+	printf("Enter your choice (all other input is considered exit): ");
+}
+
+
+int prompt_device(char* input, int max_num) {
+	if (max_num <= 0) {
+		return -1;
+	}
+
+	int choice = 0;
+
+	do {
+		printf("Select a device: ");
+		scanf("%s", input);
+
+		choice = atoi(input);
+	} while (choice == 0 || choice > max_num);
+
+	return choice;
 }
