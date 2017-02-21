@@ -42,6 +42,7 @@ int main(int argc, char **argv)
 					printf("%s  %s\n", addr, name);
 				}
 			}
+			choice = -1;
 			break;
 		case 2:
 			if (ii == NULL) {
@@ -53,6 +54,7 @@ int main(int argc, char **argv)
 		case 3:
 			break;
 		default:
+			choice = 0;
 			break;
 		}
 	}
