@@ -65,8 +65,6 @@ int main(int argc, char **argv)
 {
 	// To establish an RFCOMM connection with another Bluetooth device
 	// create and fill out a struct sockaddr_rc addressing structure
-
-	
 	struct sockaddr_rc addr = { 0 };
 	int s, status;
 	char dest[18] = "80:BE:05:30:D5:3F"; // hard coded to connect to 80:BE:05:30:D5:3F
