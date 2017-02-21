@@ -4,18 +4,25 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 
+/*
 struct sockaddr_rc {
-	sa_family_t	rc_family; // should always be AF_BLUETOOTH.
-	bdaddr_t	rc_bdaddr; // For a listening socket, specifies the local
-						   // Bluetooth adapter to use, and is typically set
-						   // to BDADDR_ANY (any local Bluetooth adapter)
-	uint8_t		rc_channel; // For listening sockets, specifies the port number
-							// to listen on
+sa_family_t	rc_family; // specifies the addressing family of the socket
+					   // should always be AF_BLUETOOTH.
+bdaddr_t	rc_bdaddr; // specify the Bluetooth address to connect to
+uint8_t		rc_channel; // specify the Bluetooth port number to connect to
 };
+*/
 
+/*
 // Bluetooth byte ordering is little-endian (the least significant bytes
 // are transmitted first)
-// They are used when filling in the socket addressing structures,// communicating with the Bluetooth microcontroller, and when performing// low level operations on transport protocol sockets// 16 bit unsigned int to Bluetooth byte orderunsigned short int htobs(unsigned short int num);
+
+// They are used when filling in the socket addressing structures,
+// communicating with the Bluetooth microcontroller, and when performing
+// low level operations on transport protocol sockets
+
+// 16 bit unsigned int to Bluetooth byte order
+unsigned short int htobs(unsigned short int num);
 // convert back
 unsigned short int btohs(unsigned short int num);
 
@@ -23,7 +30,9 @@ unsigned short int btohs(unsigned short int num);
 unsigned int htobl(unsigned int num);
 // convert back
 unsigned int btohl(unsigned int num);
+*/
 
+/*
 // For Linux kernel versions ealier than 2.6.7
 // when bind doesn't fail, return 0
 int dynamic_bind_rc(int sock, struct sockaddr_rc *sockaddr, uint8_t *port)
@@ -46,13 +55,21 @@ int dynamic_bind_rc(int sock, struct sockaddr_rc *sockaddr, uint8_t *port)
 	return err;
 }
 
+//For Linux kernel versions 2.6.7 and greater, dynamically binding to an RFCOMM
+// or L2CAP port is simple.
+// The rc_channel field of the socket addressing structure used to bind the socket
+// is simply set to 0, and the kernel binds the socket to the first available port
+*/
+
 int main(int argc, char **argv)
 {
 	// To establish an RFCOMM connection with another Bluetooth device
 	// create and fill out a struct sockaddr_rc addressing structure
+
+	
 	struct sockaddr_rc addr = { 0 };
 	int s, status;
-	char dest[18] = "01:23:45:67:89:AB";
+	char dest[18] = "80:BE:05:30:D5:3F"; // hard coded to connect to 80:BE:05:30:D5:3F
 
 	// allocate a socket
 	s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
@@ -70,7 +87,8 @@ int main(int argc, char **argv)
 		status = write(s, "hello!", 6);
 	}
 
-	if (status < 0) perror("uh oh");
+	if (status < 0)
+		perror("uh oh");
 
 	close(s);
 	return 0;
