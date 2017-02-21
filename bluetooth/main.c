@@ -36,10 +36,10 @@ int main(int argc, char **argv)
 
 				if (hci_read_remote_name(sock, &(ii + i)->bdaddr, sizeof(name),
 					name, 0) < 0) {
-					printf("%s  [unknown]\n", addr);
+					printf("%i. %s  [unknown]\n", i + 1, addr);
 				}
 				else {
-					printf("%s  %s\n", addr, name);
+					printf("%i. %s  %s\n", i + 1, addr, name);
 				}
 			}
 			choice = -1;
@@ -71,5 +71,5 @@ void print_menu() {
 	printf("2. Send data to other devices\n");
 	printf("3. Wait for data from other devices\n");
 	printf("4. Exit\n");
-	printf("Enter your choice (any invalid input will exit the program: ");
+	printf("Enter your choice (all invalid input is considered exit): ");
 }
