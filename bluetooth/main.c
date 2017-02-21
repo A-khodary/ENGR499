@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 
 		if (hci_read_remote_name(sock, &(ii + i)->bdaddr, sizeof(name),
 			name, 0) < 0) {
-			printf("%s  [unknown]\n", addr, name);
+			printf("%s  [unknown]\n", addr);
 		}
 		else {
 			printf("%s  %s\n", addr, name);
