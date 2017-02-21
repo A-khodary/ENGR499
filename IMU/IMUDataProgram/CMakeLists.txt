@@ -1,0 +1,9 @@
+cmake_minimum_required(VERSION 3.5)
+
+SET(DRIVE_SRCS
+    main.cpp)
+
+ADD_EXECUTABLE(IMUProgram ${DRIVE_SRCS})
+TARGET_LINK_LIBRARIES(IMUProgram RTIMULib)
+
+INSTALL(TARGETS IMUProgram DESTINATION bin)
