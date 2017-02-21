@@ -56,6 +56,7 @@ int main(int argc, char **argv)
 			}
 			else {
 				ba2str(&(ii + device_choice - 1)->bdaddr, dest);
+				printf("%s\n", dest);
 			}
 			break;
 		case 2:
