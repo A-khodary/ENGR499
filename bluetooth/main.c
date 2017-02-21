@@ -12,13 +12,15 @@ int main(int argc, char **argv)
 	char name[248] = { 0 };
 
 	char* input = (char*)malloc(sizeof(char) * 10);
-	int choice = -1;
+	int choice = 1;
 
 	while (choice != 0) {
-		print_menu();
-		scanf("%s", input);
+		if (choice != 1) {
+			print_menu();
+			scanf("%s", input);
 
-		choice = atoi(input);
+			choice = atoi(input);
+		}
 
 		switch (choice)
 		{
@@ -43,6 +45,7 @@ int main(int argc, char **argv)
 			break;
 		case 2:
 			if (ii == NULL) {
+				printf("Should search before sending data\n");
 				choice = 1;
 				continue;
 			}
@@ -65,5 +68,6 @@ void print_menu() {
 	printf("1. Search for Bluetooth devices\n");
 	printf("2. Send data to other devices\n");
 	printf("3. Wait for data from other devices\n");
+	printf("4. Exit\n");
 	printf("Enter your choice (any invalid input will exit the program: ");
 }
