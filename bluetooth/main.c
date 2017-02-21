@@ -36,16 +36,16 @@ int main(int argc, char **argv)
 
 				if (hci_read_remote_name(sock, &(ii + i)->bdaddr, sizeof(name),
 					name, 0) < 0) {
-					printf("%i. %s  [unknown]\n", i + 1, addr);
+					printf("\t%i. %s  [unknown]\n", i + 1, addr);
 				}
 				else {
-					printf("%i. %s  %s\n", i + 1, addr, name);
+					printf("\t%i. %s  %s\n", i + 1, addr, name);
 				}
 			}
 			choice = -1;
 			break;
 		case 2:
-			if (ii == NULL) {
+			if (ii == NULL || num_rsp == -1) {
 				printf("Should search before sending data\n");
 				choice = 1;
 				continue;
