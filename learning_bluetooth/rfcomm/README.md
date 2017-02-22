@@ -1,4 +1,5 @@
-1. to compile. Use
+Compile:
+1. to compile:
 
 	`make`
 
