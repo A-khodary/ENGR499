@@ -41,13 +41,15 @@ int main()
 			sampleCount++;
 			now = RTMath::currentUSecsSinceEpoch();
 			//Display Rate
-			if((now-displayTimer)>1000000)
+			if((now-displayTimer)>100000)
 			{
-				printf("Sample rate %d: %s\r", sampleRate, RTMath::displayDegrees("", imuData.fusionPose));
+				//printf("Sample Degree %d: %s\r", sampleRate, RTMath::displayDegrees("", imuData.fusionPose));
+				//fflush(stdout);
+				printf("Sample Radian %d: %s\r", sampleRate, RTMath::displayRadians("", imuData.fusionPose));
 				fflush(stdout);
 				displayTimer = now;
 			}
-			if((now-displayTimer)>1000000)
+			if((now-rateTimer)>100000)
 			{
 				sampleRate=sampleCount;
 				sampleCount=0;
