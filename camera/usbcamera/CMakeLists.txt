@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project(usb_camera_test)
 
-set(CUDA_USE_STATIC_CUDA_RUNTIME "OFF")
+#set(CUDA_USE_STATIC_CUDA_RUNTIME "OFF")
 
 find_package(OpenCV REQUIRED)
 
