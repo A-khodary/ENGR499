@@ -5,6 +5,17 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 
+/*
+struct sockaddr_rc {
+sa_family_t	rc_family; // should always be AF_BLUETOOTH.
+bdaddr_t	rc_bdaddr; // For a listening socket, specifies the local
+					   // Bluetooth adapter to use, and is typically set
+					   // to BDADDR_ANY (any local Bluetooth adapter)
+uint8_t		rc_channel; // For listening sockets, specifies the port number
+						// to listen on
+};
+*/
+
 int main(int argc, char **argv)
 {
     struct sockaddr_rc loc_addr = { 0 }, rem_addr = { 0 };
