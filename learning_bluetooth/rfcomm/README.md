@@ -14,8 +14,8 @@
 
 	`./bin/rfcomm-receive`
 	
-Notice:
+Notice:  
 	1. in rfcomm-client.c line 70, change the string of char array dest to the bluetooth
 	address of the device which will receive the data.
-	
+	  
 	2. I believe we should run rfcomm-receive before rfcomm-send, but this is not tested.
