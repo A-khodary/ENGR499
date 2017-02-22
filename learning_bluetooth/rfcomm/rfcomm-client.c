@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 	// create and fill out a struct sockaddr_rc addressing structure
 	struct sockaddr_rc addr = { 0 };
 	int s, status;
-	char dest[18] = "80:BE:05:30:D5:3F"; // hard coded to connect to 80:BE:05:30:D5:3F
+	char dest[18] = "C0:33:5E:11:F1:8A"; // hard coded to connect to 80:BE:05:30:D5:3F
 
 	// allocate a socket
 	s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
