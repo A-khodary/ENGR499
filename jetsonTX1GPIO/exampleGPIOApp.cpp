@@ -41,7 +41,7 @@ int main(int argc, char *argv[]){
     cout << "Enter the on time interval (ms): ";
     int oninterval;
     cin >> oninterval;
-    cout << "Enter the off time interval (ms)";
+    cout << "Enter the off time interval (ms): ";
     int offinterval;
     cin >> offinterval;
 

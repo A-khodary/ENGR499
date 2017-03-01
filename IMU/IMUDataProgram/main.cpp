@@ -44,9 +44,10 @@ int main()
 			if((now-displayTimer)>100000)
 			{
 				//printf("Sample Degree %d: %s\r", sampleRate, RTMath::displayDegrees("", imuData.fusionPose));
-				//fflush(stdout);
-				printf("Sample Radian %d: %s\r", sampleRate, RTMath::displayRadians("", imuData.fusionPose));
+				//printf("Sample Radian %d: %s\r", sampleRate, RTMath::displayRadians("", imuData.fusionPose));
+				printf("Sample Accelerometers %d: X:%f, Y:%f, Z:%f\r", sampleRate, imuData.accel.x(), imuData.accel.y(), imuData.accel.z());
 				fflush(stdout);
+				//fflush(stdout);
 				displayTimer = now;
 			}
 			if((now-rateTimer)>100000)
