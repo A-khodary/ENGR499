@@ -6,12 +6,15 @@ rfkill block bluetooth #to stop bluetooth
 ```
 
 2. Unblock Bluetooth  
-`rfkill unblock bluetooth` #to start bluetooth  
-
+```Shell
+rfkill unblock bluetooth #to start bluetooth  
+```
 
 ##Compile:  
 ###1. To compile
-use `make`
+use ```Shell
+make
+```
 
 ###2. To delete all binary/executable files
 use `make clean`
