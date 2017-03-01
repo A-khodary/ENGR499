@@ -71,12 +71,15 @@ int main(int argc, char **argv)
 			break;
 		case 3:
 			if (ii == NULL || num_rsp == -1) {
-				printf("Should search before sending data\n");
+				printf("Should search devices first\n");
 				choice = 1;
 				break;
 			}
 			if (device_choice <= 0) {
 				device_choice = prompt_device(input, num_rsp);
+			}
+			if (rfcomm_send(dest) != 0) {
+				perror("Error");
 			}
 			break;
 		case -1:

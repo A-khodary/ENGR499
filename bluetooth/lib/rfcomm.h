@@ -4,4 +4,6 @@
 #include "config.h"
 #include <bluetooth/rfcomm.h>
 
+int rfcomm_send(char*);
+
 #endif
