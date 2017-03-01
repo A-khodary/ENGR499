@@ -7,3 +7,8 @@ use `make clean`
 
 ###3. To run
 use `./bin/main`
+
+##Functionality: Now support
+###1. scan devices
+###2. send data
+###3. receive data
