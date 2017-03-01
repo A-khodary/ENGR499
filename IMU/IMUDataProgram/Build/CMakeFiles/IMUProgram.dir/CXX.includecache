@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ubuntu/Desktop/ENGR499/IMU/IMUDataProgram/main.cpp
+RTIMULib.h
+/home/ubuntu/Desktop/ENGR499/IMU/IMUDataProgram/RTIMULib.h
+iostream
+-
+fstream
+-
+
