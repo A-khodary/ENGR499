@@ -23,7 +23,7 @@ int rfcomm_send(int *sock, char* dest)
 		status = write(*sock, "If you get this, it means the program worked. Please email me, so I can proceed", 6);
 	}
 
-	//close(sock);
+	close(*sock);
 	if (status < 0) {
 		perror("Error");
 		return 1;

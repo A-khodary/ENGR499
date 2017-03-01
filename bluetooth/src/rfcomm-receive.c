@@ -9,7 +9,7 @@ int rfcomm_receive(int *sock)
 
     // allocate socket
 	//int sock;
-    //sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+    *sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
     // set to 0, binds the socket to the first available port
     local_address.rc_family = AF_BLUETOOTH;
@@ -35,6 +35,6 @@ int rfcomm_receive(int *sock)
 
     // close connection
     close(client);
-    //close(*sock);
+    close(*sock);
     return 0;
 }

@@ -53,6 +53,7 @@ int main(int argc, char **argv)
 				}
 			}
 			choice = -1;
+			close(sock);
 
 			device_choice = prompt_device(input, num_rsp);
 			if (device_choice <= 0) {
@@ -94,7 +95,6 @@ int main(int argc, char **argv)
 	free(ii);
 	free(input);
 	free(dest);
-	close(sock);
 	return 0;
 }
 
