@@ -72,15 +72,16 @@ int main(int argc, char **argv)
 			if (device_choice <= 0) {
 				device_choice = prompt_device(input, num_rsp);
 			}
-			if (rfcomm_send(dest) != 0) {
+			if (rfcomm_send(&sock, dest) != 0) {
 				printf("Failed: unable to send data\n");
 			}
 			choice = -1;
 			break;
 		case 3:
-			if (rfcomm_send(dest) != 0) {
-				return 1;
+			if (rfcomm_receive(&sock) != 0) {
+				printf("Failed: unable to receive data\n");
 			}
+			choice = -1;
 			break;
 		case -1:
 			break;

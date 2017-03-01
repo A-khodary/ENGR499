@@ -1,12 +1,13 @@
 #include "../lib/rfcomm.h"
 
-int rfcomm_send(char* dest)
+int rfcomm_send(int *sock, char* dest)
 {
 	struct sockaddr_rc addr = { 0 };
-	int sock, status;
+	int status;
 
 	// allocate a socket
-	sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	//int sock;
+	//sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
 	// set the connection parameters (who to connect to)
 	addr.rc_family = AF_BLUETOOTH;
@@ -15,14 +16,14 @@ int rfcomm_send(char* dest)
 	str2ba(dest, &addr.rc_bdaddr);
 
 	// connect to server
-	status = connect(sock, (struct sockaddr *)&addr, sizeof(addr));
+	status = connect(*sock, (struct sockaddr *)&addr, sizeof(addr));
 
 	// send a message
 	if (status == 0) {
-		status = write(sock, "If you get this, it means the program worked. Please email me, so I can proceed", 6);
+		status = write(*sock, "If you get this, it means the program worked. Please email me, so I can proceed", 6);
 	}
 
-	close(sock);
+	//close(sock);
 	if (status < 0) {
 		perror("Error");
 		return 1;
