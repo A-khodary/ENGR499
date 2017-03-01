@@ -31,6 +31,8 @@ int main()
 	int sampleCount=0;
 	int sampleRate=0;
 	uint64_t now;
+	float dx, dy, dz =0 ;
+	float oldax, olday, oldaz =0;
 	while(1)
 	{
 		//Poll at recommended IMU rate
@@ -40,14 +42,24 @@ int main()
 			RTIMU_DATA imuData = imu->getIMUData();
 			sampleCount++;
 			now = RTMath::currentUSecsSinceEpoch();
+
 			//Display Rate
 			if((now-displayTimer)>100000)
 			{
 				//printf("Sample Degree %d: %s\r", sampleRate, RTMath::displayDegrees("", imuData.fusionPose));
 				//printf("Sample Radian %d: %s\r", sampleRate, RTMath::displayRadians("", imuData.fusionPose));
-				printf("Sample Accelerometers %d: X:%f, Y:%f, Z:%f\r", sampleRate, imuData.accel.x(), imuData.accel.y(), imuData.accel.z());
+				float ax = (imuData.accel.x())*9.8;
+				float ay = (imuData.accel.y())*9.8;
+				float az = (imuData.accel.z())*9.8;
+				dx = dx + .5*(ax-oldax)*.1*.1;
+				dy = dy + .5*(ay-olday)*.1*.1;
+				dz = dz + .5*(az-oldaz)*.1*.1;
+				printf("Sample Accelerometers %d: X:%f, Y:%f, Z:%f\r", sampleRate, dx, dy, dz);
 				fflush(stdout);
 				//fflush(stdout);
+				oldax=ax;
+				olday=ay;
+				oldaz=az;
 				displayTimer = now;
 			}
 			if((now-rateTimer)>100000)
