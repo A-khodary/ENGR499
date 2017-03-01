@@ -1,12 +1,12 @@
 ##Before using the program:
 ###If bluetooth doesn't work  
 1. Block Bluetooth:  
-```Makefile
-rfkill block bluetooth //to stop bluetooth
+```Shell
+rfkill block bluetooth #to stop bluetooth
 ```
 
 2. Unblock Bluetooth  
-`rfkill unblock bluetooth` //to start bluetooth  
+`rfkill unblock bluetooth` #to start bluetooth  
 
 
 ##Compile:  
