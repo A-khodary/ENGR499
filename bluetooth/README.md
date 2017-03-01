@@ -12,10 +12,7 @@ rfkill unblock bluetooth #to start bluetooth
 
 ##Compile:  
 ###1. To compile
-use
-```Shell
-make
-```
+use `make`
 
 ###2. To delete all binary/executable files
 use `make clean`
