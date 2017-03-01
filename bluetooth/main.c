@@ -13,10 +13,11 @@ int main(int argc, char **argv)
 	char addr[BT_ADDR_SIZE] = { 0 };
 	char name[248] = { 0 };
 
-	char* input = (char*)malloc(sizeof(char) * 10);
-	int choice = -1;
 
+	int choice = -1;
 	int device_choice = 0;
+
+	char* input = (char*)malloc(sizeof(char) * 10);
 	char* dest = malloc(sizeof(char) * BT_ADDR_SIZE);
 
 	while (choice != 0) {
@@ -31,7 +32,9 @@ int main(int argc, char **argv)
 		{
 		case 1:
 			if (bt_scan(&ii, max_rsp, &num_rsp, &dev_id, &sock) != 0) {
-				exit(1);
+				choice = -1;
+				num_rsp = -1;
+				break;
 			}
 
 			int i;
@@ -70,8 +73,9 @@ int main(int argc, char **argv)
 				device_choice = prompt_device(input, num_rsp);
 			}
 			if (rfcomm_send(dest) != 0) {
-				exit(1);
+				printf("Failed: unable to send data\n");
 			}
+			choice = -1;
 			break;
 		case 3:
 			if (rfcomm_send(dest) != 0) {
@@ -89,7 +93,7 @@ int main(int argc, char **argv)
 	free(ii);
 	free(input);
 	free(dest);
-	close(sock); // a system call that is used to close an open file descriptor
+	close(sock);
 	return 0;
 }
 

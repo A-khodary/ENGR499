@@ -27,6 +27,7 @@ int bt_scan_helper(inquiry_info **ii, int max_rsp, int *num_rsp, int *dev_id,
 
 	if (*num_rsp < 0) {
 		perror("Error [hci_inquiry]");
+		return 1;
 	}
 	else {
 		printf("Search Complete!\n");
