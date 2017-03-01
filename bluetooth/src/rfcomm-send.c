@@ -22,9 +22,10 @@ int rfcomm_send(char* dest)
 		status = write(sock, "If you get this, it means the program worked. Please email me, so I can proceed", 6);
 	}
 
-	if (status < 0)
-		return 1;
-
 	close(sock);
+	if (status < 0) {
+		perror("Error");
+		return 1;
+	}
 	return 0;
 }

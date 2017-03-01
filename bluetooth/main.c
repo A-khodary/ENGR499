@@ -70,12 +70,12 @@ int main(int argc, char **argv)
 				device_choice = prompt_device(input, num_rsp);
 			}
 			if (rfcomm_send(dest) != 0) {
-				perror("Error");
+				exit(1);
 			}
 			break;
 		case 3:
 			if (rfcomm_send(dest) != 0) {
-				perror("Error");
+				return 1;
 			}
 			break;
 		case -1:
