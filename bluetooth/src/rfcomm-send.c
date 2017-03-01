@@ -10,7 +10,8 @@ int rfcomm_send(char* dest)
 
 	// set the connection parameters (who to connect to)
 	addr.rc_family = AF_BLUETOOTH;
-	addr.rc_channel = (uint8_t)1;
+	// set to 0, binds the socket to the first available port
+	addr.rc_channel = (uint8_t) 0;
 	str2ba(dest, &addr.rc_bdaddr);
 
 	// connect to server

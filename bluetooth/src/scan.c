@@ -17,7 +17,7 @@ int bt_scan_helper(inquiry_info **ii, int max_rsp, int *num_rsp, int *dev_id,
 	*sock = hci_open_dev(*dev_id);
 
 	if (*dev_id < 0 || *sock < 0) {
-		perror("opening socket");
+		perror("Opening socket");
 		//exit(1);
 		return 1;
 	}
