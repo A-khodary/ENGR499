@@ -2,6 +2,9 @@
 //Uses the RTIMULib
 
 #include "RTIMULib.h"
+#include <iostream>
+#include <fstream>
+using namespace std;
 
 int main()
 {
@@ -32,7 +35,10 @@ int main()
 	int sampleRate=0;
 	uint64_t now;
 	float dx, dy, dz =0 ;
-	float oldax, olday, oldaz =0;
+	float oldax, olday, oldaz, old2ax, old2ay, old2az =0;
+	ofstream dataFile;
+	dataFile.open("data.csv");
+	dataFile << "AccelX,AccelY,AccelZ,OldAX,OldAY,OldAZ,Old2AX,Old2AY,Old2AZ,AvgAX,AvgAY,AvgAZ,DX,DY,Dz" << endl;
 	while(1)
 	{
 		//Poll at recommended IMU rate
@@ -51,15 +57,26 @@ int main()
 				float ax = (imuData.accel.x())*9.8;
 				float ay = (imuData.accel.y())*9.8;
 				float az = (imuData.accel.z())*9.8;
-				dx = dx + .5*(ax-oldax)*.1*.1;
-				dy = dy + .5*(ay-olday)*.1*.1;
-				dz = dz + .5*(az-oldaz)*.1*.1;
+				float avgax = (ax+oldax +old2ax)/3;
+				float avgay = (ay+olday +old2ay)/3;
+				float avgaz = (az+oldaz +old2az)/3;
+				dx = dx + .5*(avgax)*.1*.1;
+				dy = dy + .5*(avgay)*.1*.1;
+				dz = dz + .5*(avgaz)*.1*.1;
 				printf("Sample Accelerometers %d: X:%f, Y:%f, Z:%f\r", sampleRate, dx, dy, dz);
 				fflush(stdout);
+				dataFile << ax<<","<<ay<<","<<az << "," 
+					<< oldax << "," << olday << "," << oldaz << ","
+					<< old2ax << "," << old2ay << "," << old2az << ","
+					<< avgax << "," << avgay << "," << avgaz << ","
+					<< dx << "," << dy << "," << dz << endl;
 				//fflush(stdout);
 				oldax=ax;
 				olday=ay;
 				oldaz=az;
+				old2ax=oldax;
+				old2ay=olday;
+				old2az=oldaz;
 				displayTimer = now;
 			}
 			if((now-rateTimer)>100000)
@@ -69,5 +86,6 @@ int main()
 				rateTimer = now;
 			}
 		}	
-	}	
+	}
+	dataFile.close();	
 }
