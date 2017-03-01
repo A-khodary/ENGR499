@@ -12,7 +12,8 @@ rfkill unblock bluetooth #to start bluetooth
 
 ##Compile:  
 ###1. To compile
-use ```Shell
+use
+```Shell
 make
 ```
 
