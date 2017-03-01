@@ -7,7 +7,7 @@ int rfcomm_send(int *sock, char* dest)
 
 	// allocate a socket
 	//int sock;
-	//sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	*sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
 	// set the connection parameters (who to connect to)
 	addr.rc_family = AF_BLUETOOTH;
