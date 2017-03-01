@@ -17,8 +17,7 @@ int bt_scan_helper(inquiry_info **ii, int max_rsp, int *num_rsp, int *dev_id,
 	*sock = hci_open_dev(*dev_id);
 
 	if (*dev_id < 0 || *sock < 0) {
-		perror("opening socket");
-		//exit(1);
+		perror("Opening socket");
 		return 1;
 	}
 
@@ -27,8 +26,8 @@ int bt_scan_helper(inquiry_info **ii, int max_rsp, int *num_rsp, int *dev_id,
 	*num_rsp = hci_inquiry(*dev_id, len, max_rsp, NULL, ii, flags);
 
 	if (*num_rsp < 0) {
-		printf("Failed!\n");
-		perror("hci_inquiry");
+		perror("Error [hci_inquiry]");
+		return 1;
 	}
 	else {
 		printf("Search Complete!\n");

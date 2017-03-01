@@ -6,7 +6,7 @@ CC = gcc
 CCFLAGS = -g -Wall
 CCTAIL = -lbluetooth
 
-OBJS = $(BIN_DIR)/scan.o $(BIN_DIR)/rfcomm-send.o
+OBJS = $(BIN_DIR)/scan.o $(BIN_DIR)/rfcomm-send.o $(BIN_DIR)/rfcomm-receive.o
 
 all: $(BIN_DIR)/main
 
@@ -19,7 +19,9 @@ $(BIN_DIR)/main: main.c $(OBJS) $(LIB_DIR)/config.h $(BIN_DIR)/.dirstamp
 $(BIN_DIR)/rfcomm-send.o: $(SRC_DIR)/rfcomm-send.c $(LIB_DIR)/rfcomm.h $(BIN_DIR)/.dirstamp
 	$(CC) $(CCFLAGS) -c $< -o $@ $(CCTAIL)
 
-
+$(BIN_DIR)/rfcomm-receive.o: $(SRC_DIR)/rfcomm-receive.c $(LIB_DIR)/rfcomm.h $(BIN_DIR)/.dirstamp
+	$(CC) $(CCFLAGS) -c $< -o $@ $(CCTAIL)
+	
 .PHONY: clean
 clean:
 	rm -rf $(BIN_DIR)

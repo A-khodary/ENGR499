@@ -10,17 +10,18 @@ int main(int argc, char **argv)
 	inquiry_info *ii = NULL;
 	int max_rsp = 255, num_rsp = -1;
 	int dev_id, sock;
-	char addr[19] = { 0 };
+	char addr[BT_ADDR_SIZE] = { 0 };
 	char name[248] = { 0 };
 
-	char* input = (char*)malloc(sizeof(char) * 10);
-	int choice = 1;
 
+	int choice = -1;
 	int device_choice = 0;
+
+	char* input = (char*)malloc(sizeof(char) * 10);
 	char* dest = malloc(sizeof(char) * BT_ADDR_SIZE);
 
 	while (choice != 0) {
-		if (choice != 1) {
+		if (choice == -1) {
 			print_menu();
 			scanf("%s", input);
 
@@ -30,13 +31,17 @@ int main(int argc, char **argv)
 		switch (choice)
 		{
 		case 1:
-			if (bt_scan(&ii, max_rsp, &num_rsp, &dev_id, &sock)) {
-				exit(1);
+			if (bt_scan(&ii, max_rsp, &num_rsp, &dev_id, &sock) != 0) {
+				choice = -1;
+				num_rsp = -1;
+				break;
 			}
 
 			int i;
 			for (i = 0; i < num_rsp; i++) {
+				// convert to address
 				ba2str(&(ii + i)->bdaddr, addr);
+				// initialize name
 				memset(name, 0, sizeof(name));
 
 				if (hci_read_remote_name(sock, &(ii + i)->bdaddr, sizeof(name),
@@ -48,11 +53,11 @@ int main(int argc, char **argv)
 				}
 			}
 			choice = -1;
+			close(sock);
 
 			device_choice = prompt_device(input, num_rsp);
 			if (device_choice <= 0) {
 				printf("No available device\n");
-				choice = 1;
 			}
 			else {
 				ba2str(&(ii + device_choice - 1)->bdaddr, dest);
@@ -61,16 +66,6 @@ int main(int argc, char **argv)
 			break;
 		case 2:
 			if (ii == NULL || num_rsp == -1) {
-				printf("Should search before sending data\n");
-				choice = 1;
-				break;
-			}
-			if (device_choice <= 0) {
-				device_choice = prompt_device(input, num_rsp);
-			}
-			break;
-		case 3:
-			if (ii == NULL || num_rsp == -1) {
 				printf("Should search devices first\n");
 				choice = 1;
 				break;
@@ -78,9 +73,16 @@ int main(int argc, char **argv)
 			if (device_choice <= 0) {
 				device_choice = prompt_device(input, num_rsp);
 			}
-			if (rfcomm_send(dest) != 0) {
-				perror("Error");
+			if (rfcomm_send(&sock, dest) != 0) {
+				printf("Failed: unable to send data\n");
 			}
+			choice = -1;
+			break;
+		case 3:
+			if (rfcomm_receive(&sock) != 0) {
+				printf("Failed: unable to receive data\n");
+			}
+			choice = -1;
 			break;
 		case -1:
 			break;
@@ -93,7 +95,6 @@ int main(int argc, char **argv)
 	free(ii);
 	free(input);
 	free(dest);
-	close(sock); // a system call that is used to close an open file descriptor
 	return 0;
 }
 
