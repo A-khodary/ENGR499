@@ -1,13 +1,9 @@
-Use
+##Compile:  
+###1. To compile
+use `make`
 
-	make
-	
-to compile. Use
+###2. To delete all binary/executable files
+use `make clean`
 
-	make clean
-
-to delete all binary/executable files
-
-Run program use:
-
-	./bin/main
+###3. To run
+use `./bin/main`
