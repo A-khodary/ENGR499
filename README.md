@@ -11,3 +11,5 @@ rfkill block bluetooth  - to stop bluetooth
 
 Compiling hw.c
 g++ -std=c++0x -pthread file_name.cpp
+
+On Jetson, github folder is in `~/code`
