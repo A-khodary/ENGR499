@@ -28,7 +28,8 @@ Camera::TakePicture()
 	throw cv::Exception();
     }
     
-    std::string filename = filePrefix + std::to_string(imgCounter)
+    std::string filename = filePrefix + std::to_string(imgCounter++)
 	+ fileSuffix;
+    imshow("image", img);
     imwrite(filename, img);
 }

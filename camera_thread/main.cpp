@@ -3,10 +3,24 @@
  */
 #include "camera.h"
 
-int main()
+#include <thread>
+
+void RunCamera()
 {
     Camera camera(0);
-    camera.TakePicture();
 
+    while (true)
+    {
+	camera.TakePicture();
+	cv::waitKey(1000);
+    }
+}
+
+int main()
+{
+    std::thread t(RunCamera);
+
+    t.join();
+    
     return 0;
 }
