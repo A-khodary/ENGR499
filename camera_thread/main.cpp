@@ -17,16 +17,17 @@ void RunCamera()
     while (true)
     {
 	cv::Mat img = camera.TakePicture();
-	camera.ConvertToBinary(img);
-	cv::waitKey(5000);
+	img = camera.ConvertToBinary(img);
+	camera.FindQRCodeCenter(img);
+	cv::waitKey(1);
     }
 }
 
 int main()
 {
-    std::thread t(RunCamera);
+    std::thread cameraThread(RunCamera);
 
-    t.join();
+    cameraThread.join();
     
     return 0;
 }

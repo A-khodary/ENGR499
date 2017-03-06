@@ -12,6 +12,7 @@ class Camera
     Camera(int deviceNum, std::string QRImage);
     cv::Mat TakePicture();
     cv::Mat ConvertToBinary(cv::Mat img);
+    std::pair<int, int> FindQRCodeCenter(cv::Mat binaryImg);
     
  private:
     int imgCounter;
