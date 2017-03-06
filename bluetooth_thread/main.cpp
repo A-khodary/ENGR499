@@ -8,6 +8,7 @@
 #include <functional>
 #include <mutex>
 #include <condition_variable>
+#include <stdexcept>
 
 using namespace std;
 
@@ -25,10 +26,17 @@ int main(int argc, char **argv)
 	inquiry_info *ii = NULL;
 	char* dest = new char[BT_ADDR_SIZE];
 
-	scanBluetooth(ii, dest);
+	try {
+		scanBluetooth(ii, dest);
+	}
+	catch (runtime_error& ex) {
+		cerr << "exception caught: " << ex.what() << endl;
+		return 1;
+	}
 
 	deque<string> msgs;
 
+	//cout << "thead" << endl;
 	thread bt_send(runBluetoothSend, dest, std::ref(msgs));
 	thread bt_receive(runBluetoothReceive, std::ref(msgs));
 
@@ -53,6 +61,7 @@ void scanBluetooth(inquiry_info *&ii, char*& dest) {
 
 	if (bt_scan(&ii, max_rsp, num_rsp, sock) != 0) {
 		num_rsp = -1;
+		throw runtime_error("Cannot scan");
 	}
 
 	while (num_rsp <= 0) {
