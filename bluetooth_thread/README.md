@@ -24,3 +24,4 @@ use `./bin/main`
 ###1. scan devices
 ###2. send data
 ###3. receive data
+###4. threaded
