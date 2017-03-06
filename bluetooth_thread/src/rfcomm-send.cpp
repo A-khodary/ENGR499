@@ -15,9 +15,6 @@ int rfcomm_send(int &sock, char* dest, std::deque<std::string>& msgs)
 	status = connect(sock, (struct sockaddr *)&addr, sizeof(addr));
 
 	// send a message
-	/*if (status == 0) {
-		status = write(sock, "If you get this, it means the program worked. Please email me, so I can proceed", 6);
-	}*/
 	std::deque<std::string>::iterator it;
 	for (int i = 0, size = msgs.size(); status == 0 && i < size; i++) {
 		it = msgs.begin();

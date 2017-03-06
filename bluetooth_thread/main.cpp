@@ -6,6 +6,8 @@
 #include <iostream>
 #include <thread>
 #include <functional>
+#include <mutex>
+#include <condition_variable>
 
 using namespace std;
 
@@ -14,6 +16,9 @@ int prompt_device(char*, const int&);
 void scanBluetooth(inquiry_info *&, char*&);
 void runBluetoothSend(char*, deque<string>&);
 void runBluetoothReceive(deque<string>&);
+
+mutex mtx;
+condition_variable bt_send, bt_receive;
 
 int main(int argc, char **argv)
 {
@@ -25,10 +30,10 @@ int main(int argc, char **argv)
 	deque<string> msgs;
 
 	thread bt_send(runBluetoothSend, dest, std::ref(msgs));
-	//thread bt_receive(runBluetoothReceive, std::ref(msgs));
+	thread bt_receive(runBluetoothReceive, std::ref(msgs));
 
 	bt_send.join();
-	//bt_receive.join();
+	bt_receive.join();
 
 	delete ii;
 	delete dest;
@@ -90,11 +95,19 @@ void scanBluetooth(inquiry_info *&ii, char*& dest) {
 }
 
 void runBluetoothSend(char* dest, deque<string>& msgs) {
+	unique_lock<mutex> lck(mtx);
+
 	// allocate a socket
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
 	//int index = 0;
 	while (true) {
+		if (msgs.empty()) {
+			bt_send.wait(lck);
+			bt_receive.notify_one();
+			continue;
+		}
+
 		if (rfcomm_send(sock, dest, msgs) != 0) {
 			printf("Failed: unable to send data\n");
 		}
@@ -104,9 +117,17 @@ void runBluetoothSend(char* dest, deque<string>& msgs) {
 }
 
 void runBluetoothReceive(deque<string>& msgs) {
+	unique_lock<mutex> lck(mtx);
+
 	// allocate a socket
 	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 	while (true) {
+		if (msgs.empty()) {
+			bt_receive.wait(lck);
+			bt_send.notify_one();
+			continue;
+		}
+
 		if (rfcomm_receive(sock, msgs) != 0) {
 			printf("Failed: unable to receive data\n");
 		}
