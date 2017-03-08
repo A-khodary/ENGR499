@@ -4,6 +4,7 @@
 #include "RTIMULib.h"
 #include <iostream>
 #include <fstream>
+#include <cmath>
 using namespace std;
 
 int main()
@@ -71,10 +72,21 @@ int main()
 						firsty=ay;
 						firstz=az;
 					}
+					if(abs(avgax-firstx)>.02)
+					{
+						dx = dx + .5*(avgax-firstx)*.1*.1;
+					}
 
-					dx = dx + .5*(avgax-firstx)*.1*.1;
-					dy = dy + .5*(avgay-firsty)*.1*.1;
-					dz = dz + .5*(avgaz-firstz)*.1*.1;
+					if(abs(avgay-firsty)>.02)
+					{
+						dy = dy + .5*(avgay-firsty)*.1*.1;
+					}
+
+					if(abs(avgaz-firstz)>.02)
+					{
+						dz = dz + .5*(avgaz-firstz)*.1*.1;
+					}
+
 
 					dataFile << ax<<","<<ay<<","<<az << "," 
 						<< oldax << "," << olday << "," << oldaz << ","
@@ -86,12 +98,34 @@ int main()
 					fflush(stdout);
 
 					//fflush(stdout);
-					oldax=ax;
-					olday=ay;
-					oldaz=az;
 					old2ax=oldax;
 					old2ay=olday;
 					old2az=oldaz;
+					if(abs(avgax-firstx)<.02)
+					{
+						oldax=0;
+					}
+					else
+					{
+						oldax=ax;
+					}
+					if(abs(avgay-firsty)<.02)
+					{
+						olday=0;
+					}
+					else
+					{
+						olday=ay;
+					}
+					if(abs(avgaz-firstz)<.02)
+					{
+						oldaz=0;
+					}
+					else
+					{
+						oldaz=az;
+					}
+
 					displayTimer = now;
 				}
 				if((now-rateTimer)>1000000)
