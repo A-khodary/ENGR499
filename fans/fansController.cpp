@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <thread>
-#include "../jetsonTX1GPIO/jetsonGPIO.h"
+#include "jetsonGPIO.h"
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -22,17 +22,20 @@ condition_variable fanCV[8];
 
 
 void TurnFanOn(int milliseconds, int gpio) {
+    // gpioUnexport(GPIOs[gpio]);
 	gpioExport(GPIOs[gpio]);
 	gpioSetDirection(GPIOs[gpio], outputPin);
-	cout << "Turning fan " << i << " on" << endl;
+	cout << "Turning fan on" << endl;
 	gpioSetValue(GPIOs[gpio], on);
-	usleep(milliseconds);         
-	cout << "Turning fan " << i << " off" << endl;
+	usleep(milliseconds*10000);         
+	cout << "Turning fan off" << endl;
 	gpioSetValue(GPIOs[gpio], off);
+	gpioUnexport(GPIOs[gpio]);
 }
 
 
 void fanThread(int i) {
+    while(1) {
 	// Wait until main() sends data
 	std::unique_lock<std::mutex> lock(fanMutex[i]);
     fanCV[i].wait(lock);
@@ -46,6 +49,7 @@ void fanThread(int i) {
     // the waiting thread only to block again (see notify_one for details)
     lock.unlock();
     fanCV[i].notify_one();
+    }
 }
 
 void wakeUpFanThread(int i, int data) {
@@ -56,15 +60,18 @@ void wakeUpFanThread(int i, int data) {
 
 int main() {
 	int i;
-	for(i=0; i<8; i++) {
+	for(i=0; i<3; i++) {
 		threads[i] = thread(fanThread, i);
 	}
 	
 	//Testing all 8 fans
 	cout << "Testing all 8 fans" << endl;
-	for(i=0; i<8; i++) {
+	
+	for(i=0; i<3; i++) {
 		wakeUpFanThread(i, 1000);
 	}
+       
+
 	
 	while(true) {
 		int fanNum;
@@ -78,7 +85,8 @@ int main() {
 		
 		
 		
-	}
+		}
+
 }
 
 
