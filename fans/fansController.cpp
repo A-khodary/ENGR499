@@ -24,10 +24,10 @@ condition_variable fanCV[8];
 void TurnFanOn(int milliseconds, int gpio) {
 	gpioExport(GPIOs[gpio]);
 	gpioSetDirection(GPIOs[gpio], outputPin);
-	cout << "Turning fan on" << endl;
+	cout << "Turning fan " << i << " on" << endl;
 	gpioSetValue(GPIOs[gpio], on);
 	usleep(milliseconds);         
-	cout << "Turning fan off" << endl;
+	cout << "Turning fan " << i << " off" << endl;
 	gpioSetValue(GPIOs[gpio], off);
 }
 
@@ -46,11 +46,13 @@ void fanThread(int i) {
     // the waiting thread only to block again (see notify_one for details)
     lock.unlock();
     fanCV[i].notify_one();
-	
-
 }
 
-
+void wakeUpFanThread(int i, int data) {
+	fanData[i] = data; //set data
+	lock_guard<std::mutex> lock(fanMutex[i]);  //acquire lock
+	fanCV[i].notify_one(); //notify one
+}
 
 int main() {
 	int i;
@@ -58,15 +60,23 @@ int main() {
 		threads[i] = thread(fanThread, i);
 	}
 	
+	//Testing all 8 fans
+	cout << "Testing all 8 fans" << endl;
+	for(i=0; i<8; i++) {
+		wakeUpFanThread(i, 1000);
+	}
+	
 	while(true) {
-		for(i=0; i<8; i++) {
-			{
-				fanData[i] = 1000; //set data
-				lock_guard<std::mutex> lock(fanMutex[i]);  //acquire lock
-			}
-			fanCV[i].notify_one(); //notify one
-			
-		}
+		int fanNum;
+		int time;
+		cout << "Please enter the number(1-8) of the fan you would like to turn on" << endl;
+		cin >> fanNum;
+		cout << "Please enter the number of second you would like it to trun on for" << endl;
+		cin >> time;
+		
+		wakeUpFanThread(fanNum, time*1000);
+		
+		
 		
 	}
 }
