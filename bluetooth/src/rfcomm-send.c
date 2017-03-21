@@ -20,7 +20,7 @@ int rfcomm_send(int *sock, char* dest)
 
 	// send a message
 	if (status == 0) {
-		status = write(*sock, "If you get this, it means the program worked. Please email me, so I can proceed", 6);
+		status = write(*sock, "Hello", 6);
 	}
 
 	close(*sock);
