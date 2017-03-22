@@ -3,6 +3,7 @@
 #include <opencv2/features2d/features2d.hpp>
 //#include <opencv2/video/video.hpp>
 #include <iostream>
+#include <zbar.h>
 
 cv::Mat readFromCamera(int deviceNum) {
     cv::Mat img;
@@ -27,24 +28,76 @@ cv::Mat readFromCamera(int deviceNum) {
     return img;
 }
 
-int main() {
+void decodeFrame(cv::Mat frame_grayscale) {
+
+    cv::Mat frame(frame_grayscale);
+
+    // Obtain image data
+    int width = frame_grayscale.cols;
+    int height = frame_grayscale.rows;
+    uchar *raw = (uchar *)(frame_grayscale.data);
+
+    // Wrap image data
+    zbar::Image image(width, height, "Y800", raw, width * height);
+
+    // Create a zbar reader
+    zbar::ImageScanner scanner;
+
+    // Configure the reader
+    scanner.set_config(zbar::ZBAR_NONE, zbar::ZBAR_CFG_ENABLE, 1);
+    // Scan the image for barcodes
+    //int n = scanner.scan(image);
+    scanner.scan(image);
+
+    // Extract results
+    for (zbar::Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
+
+        // decode QR
+        if (symbol->get_type() == zbar::ZBAR_QRCODE) {
+            std::cout << "Decoded QR: \"" << symbol->get_data() << '"' << std::endl;
+            std::cout << "Location: (" << symbol->get_location_x(0) << "," << symbol->get_location_y(0) << ")" << std::endl;
+            
+	    //the number of points in the location polygon
+	    std::cout << "Size: " << symbol->get_location_size() << std::endl;
+
+            // Draw location of the symbols found
+            if (symbol->get_location_size() == 4) {
+                //rectangle(frame, Rect(symbol->get_location_x(i), symbol->get_location_y(i), 10, 10), Scalar(0, 255, 0));
+                line(frame, cv::Point(symbol->get_location_x(0), symbol->get_location_y(0)), cv::Point(symbol->get_location_x(1), symbol->get_location_y(1)), cv::Scalar(0, 255, 0), 2, 8, 0);
+                line(frame, cv::Point(symbol->get_location_x(1), symbol->get_location_y(1)), cv::Point(symbol->get_location_x(2), symbol->get_location_y(2)), cv::Scalar(0, 255, 0), 2, 8, 0);
+                line(frame, cv::Point(symbol->get_location_x(2), symbol->get_location_y(2)), cv::Point(symbol->get_location_x(3), symbol->get_location_y(3)), cv::Scalar(0, 255, 0), 2, 8, 0);
+                line(frame, cv::Point(symbol->get_location_x(3), symbol->get_location_y(3)), cv::Point(symbol->get_location_x(0), symbol->get_location_y(0)), cv::Scalar(0, 255, 0), 2, 8, 0);
+            }
+
+	    // Show captured frame, now with overlays!
+          imshow("captured", frame);
+
+        }
+    }
+}
+
+int main(int argc, char **argv) {
+
+    cv::Mat img_gray;
+    // Grab the image in which we search for QR codes
+    if (argc == 2) {
+        // image input
+        img_gray = cv::imread(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
+    } else {
+        //img_gray = readFromCamera(0);
+        img_gray = cv::imread("pokemon_qr.png", CV_LOAD_IMAGE_GRAYSCALE);
+    }
+
+    decodeFrame(img_gray);
+
+
+    ///////
+
     cv::OrbFeatureDetector detector(5000);
     std::vector<cv::KeyPoint> img_keypoints, qr_keypoints;
     cv::Mat img_descriptors, qr_descriptors;
 
     cv::Mat qr = cv::imread("qr_code_one_square2.jpg");
-
-    // Grab the image in which we search for QR codes
-    cv::Mat img_gray;
-    try
-    {
-        //img_gray = readFromCamera(0);
-        img_gray = cv::imread("pokemon_qr.png", CV_LOAD_IMAGE_GRAYSCALE);
-    }
-    catch (cv::Exception e)
-    {
-        return 0;
-    }
 
     ///////////////////////////////
 
