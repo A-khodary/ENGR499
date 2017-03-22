@@ -20,19 +20,20 @@ int fanData[8];
 mutex fanMutex[8];
 condition_variable fanCV[8];
 
-
-void TurnFanOn(int milliseconds, int gpio) {
-    // gpioUnexport(GPIOs[gpio]);
+void TurnFanOn(int onPercent, int gpio) {
+    int offPercent = 100-onPercent;
 	gpioExport(GPIOs[gpio]);
 	gpioSetDirection(GPIOs[gpio], outputPin);
 	cout << "Turning fan on" << endl;
-	gpioSetValue(GPIOs[gpio], on);
-	usleep(milliseconds*10000);         
+	for(int q =0; q < 100; q++) {
+		gpioSetValue(GPIOs[gpio], on);
+		usleep(onPercent*1000);     
+		gpioSetValue(GPIOs[gpio], off);
+		usleep(offPercent*1000);
+	}        
 	cout << "Turning fan off" << endl;
-	gpioSetValue(GPIOs[gpio], off);
 	gpioUnexport(GPIOs[gpio]);
 }
-
 
 void fanThread(int i) {
     while(1) {
@@ -52,40 +53,100 @@ void fanThread(int i) {
     }
 }
 
-void wakeUpFanThread(int i, int data) {
-	fanData[i] = data; //set data
+void wakeUpFanThread(int i) {
 	lock_guard<std::mutex> lock(fanMutex[i]);  //acquire lock
 	fanCV[i].notify_one(); //notify one
 }
 
+
+void moveForward(int onPercent) {
+	fanData[1] = onPercent;
+	fanData[6] = onPercent;
+	wakeUpFanThread(1);
+	wakeUpFanThread(6);
+}
+void moveBackward(int onPercent) {
+	fanData[2] = onPercent;
+	fanData[5] = onPercent;
+	wakeUpFanThread(2);
+	wakeUpFanThread(5);
+}
+void moveLeft(int onPercent) {
+	fanData[4] = onPercent;
+	fanData[7] = onPercent;
+	wakeUpFanThread(4);
+	wakeUpFanThread(7);
+}
+void moveRight(int onPercent) {
+	fanData[3] = onPercent;
+	fanData[8] = onPercent;
+	wakeUpFanThread(3);
+	wakeUpFanThread(8);
+}
+
+
+void turnCCW(int onPercent) {
+	fanData[1] = onPercent;
+	fanData[3] = onPercent;
+	fanData[5] = onPercent;
+	fanData[7] = onPercent;
+	wakeUpFanThread(1);
+	wakeUpFanThread(3);
+	wakeUpFanThread(5);
+	wakeUpFanThread(7);
+}
+void turnCW(int onPercent) {
+	fanData[2] = onPercent;
+	fanData[4] = onPercent;
+	fanData[6] = onPercent;
+	fanData[8] = onPercent;
+	wakeUpFanThread(2);
+	wakeUpFanThread(4);
+	wakeUpFanThread(6);
+	wakeUpFanThread(8);
+} 
+
+
 int main() {
 	int i;
-	for(i=0; i<3; i++) {
+	for(i=0; i<8; i++) {
 		threads[i] = thread(fanThread, i);
 	}
-	
 	//Testing all 8 fans
 	cout << "Testing all 8 fans" << endl;
 	
-	for(i=0; i<3; i++) {
-		wakeUpFanThread(i, 1000);
+	for(i=0; i<8; i++) {
+		wakeUpFanThread(i);
 	}
-       
-
+	
+	cout << "tesing move forward" << endl;
+	moveForward(50);
+	
+	cout << "tesing move backward" << endl;
+	moveBackward(50);
+	
+	cout << "tesing move left" << endl;
+	moveLeft(50);
+	
+	cout << "tesing move right" << endl;
+	moveRight(50);
+	
+	cout << "tesing turn CW" << endl;
+	turnCW(50);
+	
+	cout << "tesing turn CCW" << endl;
+	turnCCW(50);
 	
 	while(true) {
 		int fanNum;
 		int time;
 		cout << "Please enter the number(1-8) of the fan you would like to turn on" << endl;
 		cin >> fanNum;
-		cout << "Please enter the number of second you would like it to trun on for" << endl;
-		cin >> time;
 		
-		wakeUpFanThread(fanNum, time*1000);
+		wakeUpFanThread(fanNum);
 		
-		
-		
-		}
+	
+	}
 
 }
 
