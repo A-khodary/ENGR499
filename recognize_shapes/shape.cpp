@@ -3,22 +3,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-cv::Mat GetImage()
+cv::Mat GetImage(cv::VideoCapture& cap)
 {
-    // Read shape image
-    //cv::Mat shapeImg = cv::imread("square.jpg");
-    cv::VideoCapture cap(0);
-    if (!cap.isOpened())
-    {
-	std::cout << "Video capture is not opened" << std::endl;
-	throw cv::Exception();
-    }
-    
-    if (!cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920))
-	std::cout << "Resizing failed" << std::endl;
-    if (!cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080))
-	std::cout << "Resizing failed" << std::endl;
-    
     // Take image
     cv::Mat shapeImg;
     if (!cap.read(shapeImg))
@@ -27,7 +13,7 @@ cv::Mat GetImage()
 	throw cv::Exception();
     }
 
-    imwrite("image.jpg", shapeImg);
+    //imwrite("image.jpg", shapeImg);
     imshow("shapeImg", shapeImg);
 
     return shapeImg;
@@ -37,12 +23,15 @@ cv::Mat ThresholdImage(cv::Mat shapeImg)
 {
     // Convert to binary
     cv::cvtColor(shapeImg, shapeImg, CV_BGR2GRAY);
+
+    imshow("Grayscale", shapeImg);
     
-    cv::adaptiveThreshold(shapeImg, shapeImg, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 21, 30);
+    cv::adaptiveThreshold(shapeImg, shapeImg, 255,
+    			  cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 51, 15);
     
     //cv::threshold(shapeImg, shapeImg, 50, 255, CV_THRESH_BINARY);
 
-    imshow("shapeImg", shapeImg);
+    imshow("Threshold", shapeImg);
 
     return shapeImg;
 }
@@ -58,7 +47,8 @@ void RecognizeShapes(cv::Mat shapeImg)
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
     cv::RNG rng(12345);
-    findContours(shapeImg, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+    findContours(shapeImg, contours, hierarchy, CV_RETR_TREE,
+		 CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
     
     // Draw contours
@@ -78,8 +68,10 @@ void RecognizeShapes(cv::Mat shapeImg)
     for (int i = 0; i < contours.size(); i++)
     {
 	approxPolyDP(contours[i], approxSquare, arcLength(cv::Mat(contours[i]), true) * 0.05, true);
-	if (approxSquare.size() == 4)
+	if (approxSquare.size() == 4 && cv::contourArea(approxSquare) > 3000)
 	{
+	    //std::cout << "Area: " << cv::contourArea(approxSquare) << std::endl;
+	    
 	    drawContours(drawing, contours, i, cv::Scalar(0, 255, 255), CV_FILLED);
 	    std::vector<cv::Point>::iterator vertex;
 	    for (vertex = approxSquare.begin(); vertex != approxSquare.end(); vertex++)
@@ -94,13 +86,30 @@ void RecognizeShapes(cv::Mat shapeImg)
 
 int main()
 {
-    cv::Mat shapeImg = GetImage();
-
-    //cv::Mat shapeImg = cv::imread("image.jpg");
-    shapeImg = ThresholdImage(shapeImg);
-    RecognizeShapes(shapeImg);
+    //cv::Mat shapeImg = cv::imread("square.jpg");
+    cv::VideoCapture cap(1);
+    if (!cap.isOpened())
+    {
+	std::cout << "Video capture is not opened" << std::endl;
+	throw cv::Exception();
+    }
     
-    cv::waitKey();
+    if (!cap.set(CV_CAP_PROP_FRAME_WIDTH, 1920))
+	std::cout << "Resizing failed" << std::endl;
+    if (!cap.set(CV_CAP_PROP_FRAME_HEIGHT, 1080))
+	std::cout << "Resizing failed" << std::endl;
+    
+    
+    while (true)
+    {
+	cv::Mat shapeImg = GetImage(cap);
+	
+	//cv::Mat shapeImg = cv::imread("image.jpg");
+	shapeImg = ThresholdImage(shapeImg);
+	RecognizeShapes(shapeImg);
+	
+	cv::waitKey(30);
+    }
 
     return 0;
 }
