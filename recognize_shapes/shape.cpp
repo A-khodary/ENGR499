@@ -64,21 +64,67 @@ void RecognizeShapes(cv::Mat shapeImg)
     imshow("Result window", drawing);
     */
 
-    std::vector<cv::Point> approxSquare;
+    std::vector<cv::Point> approxShape;
     for (int i = 0; i < contours.size(); i++)
     {
-	approxPolyDP(contours[i], approxSquare, arcLength(cv::Mat(contours[i]), true) * 0.05, true);
-	if (approxSquare.size() == 4 && cv::contourArea(approxSquare) > 3000)
+	approxPolyDP(contours[i], approxShape,
+		     arcLength(cv::Mat(contours[i]), true) * 0.05, true);
+
+	if (approxShape.size() == 4 && cv::contourArea(approxShape) > 50)
 	{
-	    //std::cout << "Area: " << cv::contourArea(approxSquare) << std::endl;
-	    
-	    drawContours(drawing, contours, i, cv::Scalar(0, 255, 255), CV_FILLED);
-	    std::vector<cv::Point>::iterator vertex;
-	    for (vertex = approxSquare.begin(); vertex != approxSquare.end(); vertex++)
+	    double perimeter = cv::arcLength(approxShape, true);
+	    double sideLength = perimeter / 4;
+	    double approxArea = pow(sideLength, 2);
+
+	    double ratio = approxArea / cv::contourArea(approxShape);
+	    if (ratio > 0.95 && ratio <  1.05)
 	    {
-		cv::circle(drawing, *vertex, 3, cv::Scalar(0, 0, 255), 1);
+		drawContours(drawing, contours, i, cv::Scalar(0, 255, 255), CV_FILLED);
+		std::vector<cv::Point>::iterator vertex;
+		for (vertex = approxShape.begin(); vertex != approxShape.end(); vertex++)
+		{
+		    cv::circle(drawing, *vertex, 3, cv::Scalar(0, 0, 255), 1);
+		}
 	    }
 	}
+	
+	/*if (approxShape.size() > 2 && cv::contourArea(approxShape) > 2500)
+	{
+	    if (approxShape.size() == 4)
+	    {
+		//std::cout << "Area: " << cv::contourArea(approxShape) << std::endl;
+		
+		drawContours(drawing, contours, i, cv::Scalar(0, 255, 255), CV_FILLED);
+		std::vector<cv::Point>::iterator vertex;
+		for (vertex = approxShape.begin(); vertex != approxShape.end(); vertex++)
+		{
+		    cv::circle(drawing, *vertex, 3, cv::Scalar(0, 0, 255), 1);
+		}
+	    }
+	    else if (approxShape.size() == 3)
+	    {
+		//std::cout << "Area: " << cv::contourArea(approxShape) << std::endl;
+		
+		drawContours(drawing, contours, i, cv::Scalar(255, 0, 255), CV_FILLED);
+		std::vector<cv::Point>::iterator vertex;
+		for (vertex = approxShape.begin(); vertex != approxShape.end(); vertex++)
+		{
+		    cv::circle(drawing, *vertex, 3, cv::Scalar(0, 0, 255), 1);
+		}
+	    }
+	    else if (approxShape.size() == 5)
+	    {
+		//std::cout << "Area: " << cv::contourArea(approxShape) << std::endl;
+		
+		drawContours(drawing, contours, i, cv::Scalar(255, 255, 0), CV_FILLED);
+		std::vector<cv::Point>::iterator vertex;
+		for (vertex = approxShape.begin(); vertex != approxShape.end(); vertex++)
+		{
+		    cv::circle(drawing, *vertex, 3, cv::Scalar(0, 0, 255), 1);
+		}
+	    }
+	    }*/
+	
     }
 
     imshow("Result window", drawing);
@@ -87,7 +133,7 @@ void RecognizeShapes(cv::Mat shapeImg)
 int main()
 {
     //cv::Mat shapeImg = cv::imread("square.jpg");
-    cv::VideoCapture cap(1);
+    cv::VideoCapture cap(0);
     if (!cap.isOpened())
     {
 	std::cout << "Video capture is not opened" << std::endl;
