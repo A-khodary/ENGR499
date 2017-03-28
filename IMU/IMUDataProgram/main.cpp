@@ -2,6 +2,7 @@
 //Uses the RTIMULib
 
 #include "RTIMULib.h"
+#include "RTFusionRTQF.h"
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -35,13 +36,15 @@ int main()
 	//Process Data
 	int sampleCount=0;
 	int sampleRate=0;
-	uint64_t now;
-	float dx, dy, dz =0 ;
-	float oldax=0, olday=0, oldaz=0, old2ax=0, old2ay=0, old2az=0, firstx=0, firsty=0, firstz=0;
-	bool firstRead =false;
+	uint64_t now=0;
+
 	ofstream dataFile;
 	dataFile.open("data.csv");
-	dataFile << "AccelX,AccelY,AccelZ,OldAX,OldAY,OldAZ,Old2AX,Old2AY,Old2AZ,AvgAX,AvgAY,AvgAZ,DX,DY,Dz" << endl;
+	dataFile << "AccelX,AccelY,AccelZ,PosX,PosY,PosZ,rGX,rGY,rGZ" << endl;
+	RTFusionRTQF fusion;
+	float gravity[3]={0,0,1.0};
+	float pos[3] ={0,0,0};
+	float posresid[3] ={0,0,0};
 	while(1)
 	{
 		//Poll at recommended IMU rate
@@ -49,91 +52,48 @@ int main()
 		while(imu->IMURead())
 		{
 			RTIMU_DATA imuData = imu->getIMUData();
+			fusion.newIMUData(imuData, settings);
 			sampleCount++;
 			now = RTMath::currentUSecsSinceEpoch();
-			if((now-startTimer)>5000000)
+			//Display Rate
+			if((now-displayTimer)>100000)
 			{
-				//Display Rate
-				if((now-displayTimer)>100000)
-				{	
-					//printf("Sample Degree %d: %s\r", sampleRate, RTMath::displayDegrees("", imuData.fusionPose));
-					//printf("Sample Radian %d: %s\r", sampleRate, RTMath::displayRadians("", imuData.fusionPose));
-					float ax = (imuData.fusionPose.x())*9.8;
-					float ay = (imuData.fusionPose.y())*9.8;
-					float az = (imuData.fusionPose.z())*9.8;
-					float avgax = (ax+oldax +old2ax)/3;
-					float avgay = (ay+olday +old2ay)/3;
-					float avgaz = (az+oldaz +old2az)/3;	
+				displayTimer=now;
+				RTQuaternion qPose = fusion.getMeasuredQPose();
+				RTFLOAT R[3][3];
+				R[0][0] = qPose.data(0)*qPose.data(0)+qPose.data(1)*qPose.data(1)-qPose.data(2)*qPose.data(2)-qPose.data(3)*qPose.data(3);
+				R[0][1] = 2*(qPose.data(1)*qPose.data(2)-qPose.data(0)*qPose.data(3));
+				R[0][2] = 2*(qPose.data(1)*qPose.data(3)+qPose.data(0)*qPose.data(2));
+				R[1][0] = 2*(qPose.data(1)*qPose.data(2)+qPose.data(0)*qPose.data(3));
+				R[1][1] = qPose.data(0)*qPose.data(0)-qPose.data(1)*qPose.data(1)+qPose.data(2)*qPose.data(2)-qPose.data(3)*qPose.data(3);
+				R[1][2] = 2*(qPose.data(2)*qPose.data(3)-qPose.data(0)*qPose.data(1));
+				R[2][0] = 2*(qPose.data(1)*qPose.data(3)-qPose.data(0)*qPose.data(2));
+				R[2][1] = 2*(qPose.data(2)*qPose.data(3)+qPose.data(0)*qPose.data(1));
+				R[2][2] = qPose.data(0)*qPose.data(0)-qPose.data(1)*qPose.data(1)-qPose.data(2)*qPose.data(2)+qPose.data(3)*qPose.data(3);
+				
+				RTFLOAT rG[3];
+				rG[0]=gravity[0]*R[0][0] +gravity[1]*R[1][0] +gravity[2]*R[2][0];
+				rG[1]=gravity[0]*R[0][1] +gravity[1]*R[1][1] +gravity[2]*R[2][1];
+				rG[2]=gravity[0]*R[0][2] +gravity[1]*R[1][2] +gravity[2]*R[2][2];
 
-					if(!firstRead)
-					{
-						firstRead=true;
-						firstx=ax;
-						firsty=ay;
-						firstz=az;
-					}
-					if(abs(avgax-firstx)>.02)
-					{
-						dx = dx + .5*(avgax-firstx)*.1*.1;
-					}
-
-					if(abs(avgay-firsty)>.02)
-					{
-						dy = dy + .5*(avgay-firsty)*.1*.1;
-					}
-
-					if(abs(avgaz-firstz)>.02)
-					{
-						dz = dz + .5*(avgaz-firstz)*.1*.1;
-					}
-
-
-					dataFile << ax<<","<<ay<<","<<az << "," 
-						<< oldax << "," << olday << "," << oldaz << ","
-						<< old2ax << "," << old2ay << "," << old2az << ","
-						<< avgax-firstx << "," << avgay-firsty << "," << avgaz-firstz << ","
-						<< dx << "," << dy << "," << dz << endl;
-
-					printf("Sample Accelerometers %d: X:%f, Y:%f, Z:%f\r", sampleRate, dx, dy, dz);
-					fflush(stdout);
-
-					//fflush(stdout);
-					old2ax=oldax;
-					old2ay=olday;
-					old2az=oldaz;
-					if(abs(avgax-firstx)<.02)
-					{
-						oldax=0;
-					}
-					else
-					{
-						oldax=ax;
-					}
-					if(abs(avgay-firsty)<.02)
-					{
-						olday=0;
-					}
-					else
-					{
-						olday=ay;
-					}
-					if(abs(avgaz-firstz)<.02)
-					{
-						oldaz=0;
-					}
-					else
-					{
-						oldaz=az;
-					}
-
-					displayTimer = now;
-				}
-				if((now-rateTimer)>1000000)
+				RTFLOAT mA[3];
+				RTVector3 accel = imu->getAccel();
+				RTVector3 accelResid = fusion.getAccelResiduals();
+				for(int i=0;i<3;++i)
 				{
-					sampleRate=sampleCount;
-					sampleCount=0;
-					rateTimer = now;
+					mA[i]=accel.data(i)-rG[i];
+					pos[i]=pos[i]+.5*.01*((int)(mA[i]/.001)*.001);
+					posresid[i]=posresid[i]+.5*.01*((int)(accelResid.data(i)/.001)*.001);
 				}
+				printf("Sample Accelerometers %d: aX:%f, aY:%f, aZ:%f\r", sampleRate, accelResid.data(0), accelResid.data(1), accelResid.data(2));
+				dataFile << mA[0] << "," << mA[1] << "," << mA[2]<< "," << pos[0] << "," << pos[1] << "," << pos[2] << "," << accelResid.data(0) <<"," << accelResid.data(1) << "," << accelResid.data(2)<< "," << posresid[0] << "," << posresid[1] << "," << posresid[2] << endl;
+				fflush(stdout);
+			}
+			if((now-rateTimer)>1000000)
+			{
+				sampleRate=sampleCount;
+				sampleCount=0;
+				rateTimer = now;
 			}
 		}	
 	}
