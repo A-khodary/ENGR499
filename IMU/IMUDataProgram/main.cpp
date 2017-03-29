@@ -44,7 +44,9 @@ int main()
 	RTFusionRTQF fusion;
 	float gravity[3]={0,0,1.0};
 	float pos[3] ={0,0,0};
+	float velocity[3] ={0,0,0};
 	float posresid[3] ={0,0,0};
+	float velresid[3] ={0,0,0};
 	while(1)
 	{
 		//Poll at recommended IMU rate
@@ -56,7 +58,7 @@ int main()
 			sampleCount++;
 			now = RTMath::currentUSecsSinceEpoch();
 			//Display Rate
-			if((now-displayTimer)>100000)
+			if((now - displayTimer) > 100000)
 			{
 				displayTimer=now;
 				RTQuaternion qPose = fusion.getMeasuredQPose();
@@ -72,15 +74,12 @@ int main()
 				R[2][2] = qPose.data(0)*qPose.data(0)-qPose.data(1)*qPose.data(1)-qPose.data(2)*qPose.data(2)+qPose.data(3)*qPose.data(3);
 				
 				RTFLOAT rG[3];
-				rG[0]=gravity[0]*R[0][0] +gravity[1]*R[1][0] +gravity[2]*R[2][0];
-				rG[1]=gravity[0]*R[0][1] +gravity[1]*R[1][1] +gravity[2]*R[2][1];
-				rG[2]=gravity[0]*R[0][2] +gravity[1]*R[1][2] +gravity[2]*R[2][2];
-
 				RTFLOAT mA[3];
 				RTVector3 accel = imu->getAccel();
 				RTVector3 accelResid = fusion.getAccelResiduals();
 				for(int i=0;i<3;++i)
 				{
+					rG[i]=gravity[0]*R[0][i]+gravity[1]*R[1][i]+gravity[2]*R[2][i];
 					mA[i]=accel.data(i)-rG[i];
 					pos[i]=pos[i]+.5*.01*((int)(mA[i]/.001)*.001);
 					posresid[i]=posresid[i]+.5*.01*((int)(accelResid.data(i)/.001)*.001);
@@ -89,7 +88,7 @@ int main()
 				dataFile << mA[0] << "," << mA[1] << "," << mA[2]<< "," << pos[0] << "," << pos[1] << "," << pos[2] << "," << accelResid.data(0) <<"," << accelResid.data(1) << "," << accelResid.data(2)<< "," << posresid[0] << "," << posresid[1] << "," << posresid[2] << endl;
 				fflush(stdout);
 			}
-			if((now-rateTimer)>1000000)
+			if((now - rateTimer) > 1000000)
 			{
 				sampleRate=sampleCount;
 				sampleCount=0;
