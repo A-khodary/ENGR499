@@ -28,10 +28,11 @@ cv::Mat ThresholdImage(cv::Mat shapeImg)
 
     imshow("Grayscale", shapeImg);
     
-    cv::adaptiveThreshold(shapeImg, shapeImg, 255,
-    			  cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 51, 15);
+    //cv::adaptiveThreshold(shapeImg, shapeImg, 255,
+    //			  cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 51, 15);
     
-    //cv::threshold(shapeImg, shapeImg, 50, 255, CV_THRESH_BINARY);
+    cv::adaptiveThreshold(shapeImg, shapeImg, 255,
+    			  cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 121, 15);
 
     imshow("Threshold", shapeImg);
 
@@ -67,14 +68,14 @@ void RecognizeShapes(cv::Mat shapeImg)
     */
 
     std::vector<cv::Point> approxShape;
-    int pos3 = -180, pos4 = -1, pos5 = -1;
+    int pos3 = -1, pos4 = -1, pos5 = -1;
     for (int i = 0; i < contours.size(); i++)
     {	
       	approxPolyDP(contours[i], approxShape,
 		     arcLength(cv::Mat(contours[i]), true) * 0.05, true);
 
-	if (approxShape.size() >= 3 && cv::contourArea(approxShape) > 50
-	    && cv::contourArea(approxShape) < 1000)
+	if (approxShape.size() >= 3 && cv::contourArea(approxShape) > 100
+	    && cv::contourArea(approxShape) < 5000)
 	{
 	    if (approxShape.size() == 3)
 	    {
@@ -91,7 +92,10 @@ void RecognizeShapes(cv::Mat shapeImg)
 		    {
 			cv::circle(drawing, *vertex, 3, cv::Scalar(0, 0, 255), 1);
 		    }
-		    pos3 = (approxShape[0].x + approxShape[1].x) / 2;
+
+		    // Get the position
+		    pos3 = (approxShape[0].x + approxShape[1].x +
+			    approxShape[2].x) / 3;
 		}
 	    }
 	    else if (approxShape.size() == 4)
@@ -109,7 +113,10 @@ void RecognizeShapes(cv::Mat shapeImg)
 		    {
 			cv::circle(drawing, *vertex, 3, cv::Scalar(0, 0, 255), 1);
 		    }
-		    pos4 = (approxShape[0].x + approxShape[1].x) / 2;
+
+		    // Get the position
+		    pos4 = (approxShape[0].x + approxShape[1].x +
+			    approxShape[2].x + approxShape[3].x) / 4;
 		}
 	    }
 	    else if (approxShape.size() == 5)
@@ -127,23 +134,24 @@ void RecognizeShapes(cv::Mat shapeImg)
 		    {
 			cv::circle(drawing, *vertex, 3, cv::Scalar(0, 0, 255), 1);
 		    }
-		    pos5 = (approxShape[0].x + approxShape[1].x) / 2;
+
+		    // Get the position
+		    pos5 = (approxShape[0].x + approxShape[1].x +
+			    approxShape[2].x + approxShape[3].x +
+			    approxShape[4].x) / 5;
 		}
 	    }
 	}	
     }
 
-    // Detect angle of shape
-    pos3 -= 340;
-    pos4 -= 340;
-    pos5 -= 340;
     
-    double angle3 = (double) pos3 / 340 * 37.5;
-    double angle4 = (double) pos4 / 340 * 37.5;
-    double angle5 = (double) pos5 / 340 * 37.5;
+    // Detect angle of shape
+    double angle3 = (double) (pos3 - 340) / 340 * 37.5;
+    double angle4 = (double) (pos4 - 340) / 340 * 37.5;
+    double angle5 = (double) (pos5 - 340) / 340 * 37.5;
     
     std::string string3, string4, string5;
-    if (pos3 == -341)
+    if (pos3 == -1)
     {
 	string3 = "X";
     }
@@ -151,7 +159,7 @@ void RecognizeShapes(cv::Mat shapeImg)
     {
 	string3 = std::to_string(angle3);
     }
-    if (pos4 == -341)
+    if (pos4 == -1)
     {
 	string4 = "X";
     }
@@ -159,18 +167,19 @@ void RecognizeShapes(cv::Mat shapeImg)
     {
 	string4 = std::to_string(angle4);
     }
-    if (pos5 == -341)
+    if (pos5 == -1)
     {
 	string5 = "X";
     }
     else
     {
-	string5 = std::to_string(angle3);
+	string5 = std::to_string(angle5);
     }
     
     std::cout << "angle3:" << std::setw(13) << string3 << ", angle4:"
 	      << std::setw(13) << string4 << ", angle5:"
 	      << std::setw(13) << string5 << '\r';
+    
     
     imshow("Result window", drawing);
 }
@@ -199,7 +208,7 @@ int main()
 	shapeImg = ThresholdImage(shapeImg);
 	RecognizeShapes(shapeImg);
 	
-	cv::waitKey(30);
+	cv::waitKey(50);
     }
 
     return 0;
