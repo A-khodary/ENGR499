@@ -14,9 +14,11 @@ using namespace std;
 
 void print_menu();
 int prompt_device(char*, const int&);
+
 void scanBluetooth(inquiry_info *&, char*&);
-void runBluetoothSend(char*, deque<string>&);
-void runBluetoothReceive(deque<string>&);
+
+void runBluetoothSend(deque<string>&, char*, int&);
+void runBluetoothReceive(deque<string>&, int&);
 
 mutex mtx;
 condition_variable bt_send, bt_receive;
@@ -26,22 +28,30 @@ int main(int argc, char **argv)
 	inquiry_info *ii = NULL;
 	char* dest = new char[BT_ADDR_SIZE];
 
+	// sockets for sending and recieving thread
+	int& send_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	int& receive_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+
 	try {
 		scanBluetooth(ii, dest);
 	}
 	catch (runtime_error& ex) {
-		cerr << "exception caught: " << ex.what() << endl;
+		cerr << "Exception caught: " << ex.what() << endl;
 		return 1;
 	}
 
 	deque<string> msgs;
 
 	//cout << "thead" << endl;
-	thread bt_send(runBluetoothSend, dest, std::ref(msgs));
-	thread bt_receive(runBluetoothReceive, std::ref(msgs));
+	thread bt_send(runBluetoothSend, std::ref(msgs), dest, send_sock);
+	thread bt_receive(runBluetoothReceive, std::ref(msgs), receive_sock);
 
 	bt_send.join();
 	bt_receive.join();
+
+	// close the 2 sockets
+	close(send_sock);
+	close(receive_sock);
 
 	delete ii;
 	delete dest;
@@ -103,11 +113,8 @@ void scanBluetooth(inquiry_info *&ii, char*& dest) {
 	printf("%s\n", dest);
 }
 
-void runBluetoothSend(char* dest, deque<string>& msgs) {
+void runBluetoothSend(deque<string>& msgs, char* dest, int& sock) {
 	unique_lock<mutex> lck(mtx);
-
-	// allocate a socket
-	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
 	//int index = 0;
 	while (true) {
@@ -122,14 +129,12 @@ void runBluetoothSend(char* dest, deque<string>& msgs) {
 		}
 	}
 
-	close(sock);
+	//close(sock);
 }
 
-void runBluetoothReceive(deque<string>& msgs) {
+void runBluetoothReceive(deque<string>& msgs, int& sock) {
 	unique_lock<mutex> lck(mtx);
 
-	// allocate a socket
-	int sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 	while (true) {
 		if (msgs.empty()) {
 			bt_receive.wait(lck);
@@ -142,5 +147,5 @@ void runBluetoothReceive(deque<string>& msgs) {
 		}
 	}
 
-	close(sock);
+	//close(sock);
 }
