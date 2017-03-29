@@ -7,6 +7,10 @@
 #include <zbar.h>
 #include <iomanip>
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 81b70bd05aaa2f553951a085d27b7f8155f069aa
 cv::Scalar BLUE = cv::Scalar(255, 0, 0);
 cv::Scalar GREEN = cv::Scalar(0, 255, 0);
 cv::Scalar RED = cv::Scalar(0, 0, 255);
@@ -15,6 +19,10 @@ cv::Scalar YELLOW = cv::Scalar(0, 255, 255);
 cv::Scalar WHITE = cv::Scalar::all(255);
 cv::Scalar BLACK = cv::Scalar::all(0);
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 81b70bd05aaa2f553951a085d27b7f8155f069aa
 void drawGrid(cv::Mat mat_img) {
 
     int stepSize = 50;

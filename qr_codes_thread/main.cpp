@@ -16,7 +16,6 @@ void RunCamera()
     while (true)
     {
 	cv::Mat img = camera.TakePicture();
-	//img = camera.ConvertToBinary(img);
 	camera.decodeFrame(img);
 	cv::waitKey(1);
     }
