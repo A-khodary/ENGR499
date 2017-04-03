@@ -18,7 +18,7 @@ cv::Mat ShapeCamera::TakePicture()
     // Take image
     cv::Mat shapeImg = camera->TakePicture();
 
-    camera->ShowImage("shape_img", shapeImg);
+    //camera->ShowImage("shape_img", shapeImg);
 
     return shapeImg;
 }
@@ -171,6 +171,6 @@ void ShapeCamera::RecognizeShapes(cv::Mat shapeImg)
 	      << std::setw(13) << string5 << '\r';
     */
     
-    camera->ShowImage("Shape_Detection", drawing);
+    //camera->ShowImage("Shape_Detection", drawing);
 }
 
