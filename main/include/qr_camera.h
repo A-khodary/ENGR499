@@ -1,4 +1,4 @@
-// Class for taking pictures
+// Class for analyzing images for qr codes
 #ifndef QR_CAMERA
 #define QR_CAMERA
 

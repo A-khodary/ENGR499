@@ -16,12 +16,15 @@ class Camera
 
     // Takes an image and returns it.
     // This function is thread safe
-    // showImg: if true shows the image
-    cv::Mat TakePicture(bool showImg);
+    cv::Mat TakePicture();
+
+    // Shows the image with the given title
+    void ShowImage(const std::string& title, const cv::Mat& image);
     
  private:
     cv::VideoCapture cap;
-    std::mutex lock;
+    std::mutex takePictureLock;
+    std::mutex showImageLock;
 };
 
 #endif

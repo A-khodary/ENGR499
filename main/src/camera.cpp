@@ -21,22 +21,24 @@ bool Camera::OpenVideoCap(int cameraDevice)
     return true;
 }
 
-cv::Mat Camera::TakePicture(bool showImg)
+cv::Mat Camera::TakePicture()
 {
     cv::Mat img;
 
-    lock.lock();
+    takePictureLock.lock();
     if (!cap.read(img))
     {
 	std::cout << "Camera image read failed" << std::endl;
 	throw cv::Exception();
     }
-    lock.unlock();
-
-    if (showImg)
-    {
-	imshow("Image", img);
-    }
+    takePictureLock.unlock();
 
     return img;
+}
+
+void Camera::ShowImage(const std::string& title, const cv::Mat& image)
+{
+    showImageLock.lock();
+    imshow(title, image);
+    showImageLock.unlock();
 }

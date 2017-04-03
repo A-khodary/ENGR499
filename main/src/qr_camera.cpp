@@ -59,11 +59,12 @@ QRCamera::QRCamera(Camera* camera)
 
 cv::Mat QRCamera::TakePicture()
 {
-    cv::Mat img = camera->TakePicture(false);
+    cv::Mat img = camera->TakePicture();
 
     std::string filename = filePrefix + std::to_string(imgCounter++)
     + fileSuffix;
-    imshow("image", img);
+    
+    //imshow("qr_image", img);
     //imwrite(filename, img);
 
     return img;
@@ -78,7 +79,7 @@ cv::Mat QRCamera::ConvertToBinary(cv::Mat img)
 
     cv::cvtColor(img, img, CV_GRAY2BGR);
 
-    imshow("binary", img);
+    //imshow("binary", img);
 
     return img;
 }
@@ -168,10 +169,11 @@ void QRCamera::decodeFrame(cv::Mat frame) {
         }
 
         // Show captured frame, now with overlays!
-        imshow("captured", frame);
-
+        //imshow("captured", frame);
+	camera->ShowImage("captured", frame);
+	
         // clean up
         image.set_data(NULL, 0);
-        cv::waitKey(30);
+	//cv::waitKey(1);
     }
 }
