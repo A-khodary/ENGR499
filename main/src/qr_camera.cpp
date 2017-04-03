@@ -1,4 +1,4 @@
-#include "camera.h"
+#include "qr_camera.h"
 
 #include <iostream>
 #include <string>
@@ -45,7 +45,7 @@ void annotate(cv::Mat img, std::string text, cv::Point loc) {
 }
 
 
-Camera::Camera(int deviceNum)
+QRCamera::QRCamera(int deviceNum)
 {
     cap = cv::VideoCapture(deviceNum);
     if (!cap.isOpened())
@@ -68,7 +68,7 @@ Camera::Camera(int deviceNum)
     imgCounter = 0;
 }
 
-cv::Mat Camera::TakePicture()
+cv::Mat QRCamera::TakePicture()
 {
     cv::Mat img;
     if (!cap.read(img))
@@ -85,7 +85,7 @@ cv::Mat Camera::TakePicture()
     return img;
 }
 
-cv::Mat Camera::ConvertToBinary(cv::Mat img)
+cv::Mat QRCamera::ConvertToBinary(cv::Mat img)
 {
     cv::cvtColor(img, img, CV_BGR2GRAY);
 
@@ -99,7 +99,7 @@ cv::Mat Camera::ConvertToBinary(cv::Mat img)
     return img;
 }
 
-void Camera::decodeFrame(cv::Mat frame) {
+void QRCamera::decodeFrame(cv::Mat frame) {
 
     // Convert to grayscale
     cv::Mat frame_grayscale;
