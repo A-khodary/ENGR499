@@ -1,4 +1,5 @@
 #include "qr_camera.h"
+#include "camera.h"
 
 #include <iostream>
 #include <string>
@@ -45,22 +46,10 @@ void annotate(cv::Mat img, std::string text, cv::Point loc) {
 }
 
 
-QRCamera::QRCamera(int deviceNum)
+QRCamera::QRCamera(Camera* camera)
 {
-    cap = cv::VideoCapture(deviceNum);
-    if (!cap.isOpened())
-    {
-        std::cout << "Video capture is not opened" << std::endl;
-        throw cv::Exception();
-    }
-
-    //if (!cap.set(CV_CAP_PROP_FRAME_WIDTH, 960))
-        //std::cout << "Resizing failed" << std::endl;
-    //if (!cap.set(CV_CAP_PROP_FRAME_HEIGHT, 720))
-        //std::cout << "Resizing failed" << std::endl;
-    cap.set(CV_CAP_PROP_FRAME_WIDTH, 960);
-    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
-
+    this->camera = camera;
+    
     // Configure the QR code reader
     zbar::ImageScanner(scanner);
     scanner.set_config(zbar::ZBAR_NONE, zbar::ZBAR_CFG_ENABLE, 1);
@@ -70,12 +59,7 @@ QRCamera::QRCamera(int deviceNum)
 
 cv::Mat QRCamera::TakePicture()
 {
-    cv::Mat img;
-    if (!cap.read(img))
-    {
-        std::cout << "Camera image read failed" << std::endl;
-        throw cv::Exception();
-    }
+    cv::Mat img = camera->TakePicture(false);
 
     std::string filename = filePrefix + std::to_string(imgCounter++)
     + fileSuffix;

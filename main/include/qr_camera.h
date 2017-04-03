@@ -2,6 +2,8 @@
 #ifndef QR_CAMERA
 #define QR_CAMERA
 
+#include "camera.h"
+
 #include <string>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -10,7 +12,7 @@
 class QRCamera
 {
  public:
-    QRCamera(int deviceNum);
+    QRCamera(Camera* camera);
     cv::Mat TakePicture();
     cv::Mat ConvertToBinary(cv::Mat img);
     void decodeFrame(cv::Mat frame);
@@ -19,7 +21,7 @@ class QRCamera
  private:
     int imgCounter;
     std::string filePrefix, fileSuffix;
-    cv::VideoCapture cap;
+    Camera* camera;
     zbar::ImageScanner scanner;
 };
 
