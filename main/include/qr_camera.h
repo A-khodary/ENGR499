@@ -1,16 +1,16 @@
 // Class for taking pictures
-#ifndef CAMERA
-#define CAMERA
+#ifndef QR_CAMERA
+#define QR_CAMERA
 
 #include <string>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <zbar.h>
 
-class Camera
+class QRCamera
 {
  public:
-    Camera(int deviceNum);
+    QRCamera(int deviceNum);
     cv::Mat TakePicture();
     cv::Mat ConvertToBinary(cv::Mat img);
     void decodeFrame(cv::Mat frame);
