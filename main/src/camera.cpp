@@ -6,7 +6,14 @@
 
 Camera::Camera()
 {
+    takePictureLock = new std::mutex();
+    showImageLock = new std::mutex();
+}
 
+Camera::~Camera()
+{
+    delete takePictureLock;
+    delete showImageLock;
 }
 
 bool Camera::OpenVideoCap(int cameraDevice)
@@ -25,20 +32,20 @@ cv::Mat Camera::TakePicture()
 {
     cv::Mat img;
 
-    takePictureLock.lock();
+    takePictureLock->lock();
     if (!cap.read(img))
     {
 	std::cout << "Camera image read failed" << std::endl;
 	throw cv::Exception();
     }
-    takePictureLock.unlock();
+    takePictureLock->unlock();
 
     return img;
 }
 
 void Camera::ShowImage(const std::string& title, const cv::Mat& image)
 {
-    showImageLock.lock();
+    showImageLock->lock();
     imshow(title, image);
-    showImageLock.unlock();
+    showImageLock->unlock();
 }

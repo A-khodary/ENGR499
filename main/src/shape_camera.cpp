@@ -18,7 +18,6 @@ cv::Mat ShapeCamera::TakePicture()
     // Take image
     cv::Mat shapeImg = camera->TakePicture();
 
-    //imshow("shape_img", shapeImg);
     camera->ShowImage("shape_img", shapeImg);
 
     return shapeImg;
@@ -29,12 +28,12 @@ cv::Mat ShapeCamera::ThresholdImage(cv::Mat shapeImg)
     // Convert to binary
     cv::cvtColor(shapeImg, shapeImg, CV_BGR2GRAY);
 
-    //imshow("Grayscale", shapeImg);
+    //camera->ShowImage("Grayscale", shapeImg);
     
     cv::adaptiveThreshold(shapeImg, shapeImg, 255,
     			  cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 121, 15);
 
-    //imshow("Threshold", shapeImg);
+    //camera->ShowImage("Threshold", shapeImg);
 
     return shapeImg;
 }
@@ -172,7 +171,6 @@ void ShapeCamera::RecognizeShapes(cv::Mat shapeImg)
 	      << std::setw(13) << string5 << '\r';
     */
     
-    //imshow("Result window", drawing);
-    //camera->ShowImage("Shape_Detection", drawing);
+    camera->ShowImage("Shape_Detection", drawing);
 }
 

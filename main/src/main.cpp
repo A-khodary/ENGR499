@@ -5,6 +5,7 @@
 #include "qr_camera.h"
 #include "shape_camera.h"
 
+#include <iostream>
 #include <thread>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -17,9 +18,10 @@ void RunQRCamera(Camera* camera)
 
     while (true)
     {
+	//std::cout << "Cheese" << std::endl;
 	cv::Mat img = qrCamera.TakePicture();
 	qrCamera.decodeFrame(img);
-	cv::waitKey(30);
+	cv::waitKey(100);
     }
 }
 
@@ -33,7 +35,7 @@ void RunShapeCamera(Camera* camera)
 	shapeImg = shapeCamera.ThresholdImage(shapeImg);
 	shapeCamera.RecognizeShapes(shapeImg);
 
-	cv::waitKey(30);
+	cv::waitKey(100);
     }
 }
 
@@ -51,10 +53,10 @@ int main()
     std::thread qrCameraThread(RunQRCamera, camera);
 
     // Start the Shape camera thread
-    //std::thread shapeCameraThread(RunShapeCamera, camera);
+    std::thread shapeCameraThread(RunShapeCamera, camera);
     
     qrCameraThread.join();
-    //shapeCameraThread.join();
+    shapeCameraThread.join();
 
     delete camera;
     
