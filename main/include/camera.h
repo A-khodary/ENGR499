@@ -10,6 +10,7 @@ class Camera
 {
  public:
     Camera();
+    ~Camera();
 
     // Returns true if capture was opened successfully
     bool OpenVideoCap(int cameraDevice);
@@ -23,8 +24,8 @@ class Camera
     
  private:
     cv::VideoCapture cap;
-    std::mutex takePictureLock;
-    std::mutex showImageLock;
+    std::mutex* takePictureLock;
+    std::mutex* showImageLock;
 };
 
 #endif
