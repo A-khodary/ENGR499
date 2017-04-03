@@ -1,6 +1,7 @@
 /*
- * Main file for starting a camera thread
+ * Main file for starting threads
  */
+#include "camera.h"
 #include "qr_camera.h"
 
 #include <thread>
@@ -9,9 +10,9 @@
 
 const int cameraDevice = 0;
 
-void RunCamera()
+void RunQRCamera(Camera* camera)
 {
-    QRCamera qrCamera(cameraDevice);
+    QRCamera qrCamera(camera);
 
     while (true)
     {
@@ -23,8 +24,22 @@ void RunCamera()
 
 int main()
 {
-    std::thread qrCameraThread(RunCamera);
+    // Global camera object referenced by camera threads
+    Camera* camera = new Camera();
+    if (!camera->OpenVideoCap(cameraDevice))
+    {
+	std::cout << "Video capture is not opened" << std::endl;
+	return 1;
+    }
+    
+    // Start the QR camera thread
+    std::thread qrCameraThread(RunQRCamera, camera);
+
+    
+    
     qrCameraThread.join();
+
+    delete camera;
     
     return 0;
 }
