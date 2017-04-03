@@ -1,7 +1,0 @@
-/home/ubuntu/Desktop/ENGR499/IMU/IMUDataProgram/Build/CMakeFiles/install.dir
-/home/ubuntu/Desktop/ENGR499/IMU/IMUDataProgram/Build/CMakeFiles/list_install_components.dir
-/home/ubuntu/Desktop/ENGR499/IMU/IMUDataProgram/Build/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/Desktop/ENGR499/IMU/IMUDataProgram/Build/CMakeFiles/IMUProgram.dir
-/home/ubuntu/Desktop/ENGR499/IMU/IMUDataProgram/Build/CMakeFiles/edit_cache.dir
-/home/ubuntu/Desktop/ENGR499/IMU/IMUDataProgram/Build/CMakeFiles/install/strip.dir
-/home/ubuntu/Desktop/ENGR499/IMU/IMUDataProgram/Build/CMakeFiles/install/local.dir
