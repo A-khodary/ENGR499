@@ -31,7 +31,8 @@ int prompt_device(std::string& input, const int& max_num) {
 		ss << input;
 		
 		if (ss >> choice && (choice <= 0 || choice > max_num)) {
-			break;
+			//break;
+			continue;
 		}
 		else {
 			// clear the string stream
