@@ -14,11 +14,12 @@ using namespace std;
 
 void print_menu();
 int prompt_device(char*, const int&);
+void exchangeMsgs(deque<string>&, deque<string>&);
 
 void scanBluetooth(inquiry_info *&, char*&);
 
-void runBluetoothSend(deque<string>&, char*, int&);
-void runBluetoothReceive(deque<string>&, int&);
+void runBluetoothSend(deque<string>&, deque<string>&, char*, int&);
+void runBluetoothReceive(deque<string>&, deque<string>&, int&);
 
 mutex mtx;
 condition_variable bt_send, bt_receive;
@@ -27,10 +28,12 @@ int main(int argc, char **argv)
 {
 	inquiry_info *ii = NULL;
 	char* dest = new char[BT_ADDR_SIZE];
+	// strcpy(dest, "00:04:4B:66:9F:3A");
+	// strcpy(dest, "00:04:4B:65:BB:42");
 
 	// sockets for sending and recieving thread
-	int& send_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-	int& receive_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	int send_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	int receive_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
 	try {
 		scanBluetooth(ii, dest);
@@ -39,15 +42,28 @@ int main(int argc, char **argv)
 		cerr << "Exception caught: " << ex.what() << endl;
 		return 1;
 	}
+	printf("Device selected: %s\n", dest);
 
-	deque<string> msgs;
+	deque<string> send_msgs;
+	deque<string> received_msgs;
+	deque<string> bufferQ;
 
 	//cout << "thead" << endl;
-	thread bt_send(runBluetoothSend, std::ref(msgs), dest, send_sock);
-	thread bt_receive(runBluetoothReceive, std::ref(msgs), receive_sock);
+	thread bt_sendThread(runBluetoothSend, std::ref(send_msgs), std::ref(bufferQ), dest, std::ref(send_sock));
+	thread bt_receiveThread(runBluetoothReceive, std::ref(received_msgs), std::ref(bufferQ), std::ref(receive_sock));
 
-	bt_send.join();
-	bt_receive.join();
+	string temp;
+	while (true) {
+		cin >> temp;
+		send_msgs.push_back(temp);
+
+		// wake up sending thread
+		bt_send.notify_one();
+		temp.clear();
+	}
+
+	bt_sendThread.join();
+	bt_receiveThread.join();
 
 	// close the 2 sockets
 	close(send_sock);
@@ -110,42 +126,80 @@ void scanBluetooth(inquiry_info *&ii, char*& dest) {
 	int device_choice = prompt_device(input, num_rsp);
 
 	ba2str(&(ii + device_choice - 1)->bdaddr, dest);
-	printf("%s\n", dest);
+	//printf("%s\n", dest);
 }
 
-void runBluetoothSend(deque<string>& msgs, char* dest, int& sock) {
+void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, int& sock) {
 	unique_lock<mutex> lck(mtx);
 
 	//int index = 0;
+	int status = 0;
 	while (true) {
-		if (msgs.empty()) {
-			bt_send.wait(lck);
-			bt_receive.notify_one();
-			continue;
+		for (int i = 0, size = msgs.size(); i < size; i++) {
+			//it = msgs.begin();
+
+			status = rfcomm_send(sock, dest, msgs[0]);
+			if (status != 0) {
+				printf("Failed: unable to send data\n");
+
+				// break the sending loop
+				break;
+			}
+			msgs.pop_front();
 		}
 
-		if (rfcomm_send(sock, dest, msgs) != 0) {
-			printf("Failed: unable to send data\n");
+		if (msgs.empty()) {
+			bt_send.wait(lck);
+			//bt_receive.notify_one();
 		}
+
 	}
 
 	//close(sock);
 }
 
-void runBluetoothReceive(deque<string>& msgs, int& sock) {
+void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) {
 	unique_lock<mutex> lck(mtx);
 
+	// initialize variables
+	struct sockaddr_rc local_address = { 0 };
+	struct sockaddr_rc remote_addr = { 0 };
+	int client;
+
+	socklen_t opt = sizeof(remote_addr);
+	bdaddr_t my_bdaddr_any = { { 0, 0, 0, 0, 0, 0 } };
+
+	char buffer[1024] = { 0 };
+
+	// call function to initialize the receiving thread
+	initRfcommReceive(local_address, remote_addr,
+		my_bdaddr_any, sock);
+
 	while (true) {
-		if (msgs.empty()) {
+		/*if (msgs.empty()) {
+			// srcQ -> destQ
+			exchangeMsgs(msgs, otherQ);
 			bt_receive.wait(lck);
 			bt_send.notify_one();
 			continue;
-		}
+		}*/
 
-		if (rfcomm_receive(sock, msgs) != 0) {
+		if (rfcomm_receive(local_address, remote_addr,
+			my_bdaddr_any, buffer, opt, client
+			, sock, msgs) != 0) {
 			printf("Failed: unable to receive data\n");
 		}
 	}
 
+	close(client);
 	//close(sock);
+}
+
+
+void exchangeMsgs(deque<string>& destQ, deque<string>& srcQ) {
+	while (!srcQ.empty()) {
+		destQ.push_back(srcQ[0]);
+		srcQ.pop_front();
+	}
+
 }

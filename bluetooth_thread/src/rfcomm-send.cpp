@@ -1,6 +1,10 @@
 #include "../lib/rfcomm.h"
 
-int rfcomm_send(int &sock, char* dest, std::deque<std::string>& msgs)
+void initRfcommSend(int& sock) {
+	//
+}
+
+int rfcomm_send(int &sock, char* dest, std::string& msg)
 {
 	struct sockaddr_rc addr = { 0 };
 	int status;
@@ -13,21 +17,18 @@ int rfcomm_send(int &sock, char* dest, std::deque<std::string>& msgs)
 
 	// connect to server
 	status = connect(sock, (struct sockaddr *)&addr, sizeof(addr));
-
+	
 	// send a message
-	std::deque<std::string>::iterator it;
-	for (int i = 0, size = msgs.size(); status == 0 && i < size; i++) {
-		it = msgs.begin();
-		status = write(sock, it->c_str(), it->size() + 1);
-
-		msgs.pop_front();
+	if (status == 0) {
+		status = write(sock, msg.c_str(), msg.size());
 	}
 
 	if (status < 0) {
 		perror("Error");
-		return 1;
+		//return 1;
 	}
 
-	msgs.clear();
-	return 0;
+	// status = 0: success
+	// status = -1: error
+	return status;
 }
