@@ -7,15 +7,15 @@ CTHREAD = -pthread
 FLAGS = -g -Wall
 TAILS = -lbluetooth
 
-OBJS = $(BIN_DIR)/rfcomm-send.o $(BIN_DIR)/rfcomm-receive.o
+OBJS = $(BIN_DIR)/rfcomm-send $(BIN_DIR)/rfcomm-receive
 
 all: $(OBJS)
 
-$(BIN_DIR)/rfcomm-send.o: rfcomm-client.cpp $(BIN_DIR)/.dirstamp
-	$(CXX) $(FLAGS) -c $< -o $@ $(TAILS)
+$(BIN_DIR)/rfcomm-send: rfcomm-client.cpp $(BIN_DIR)/.dirstamp
+	$(CXX) $(FLAGS) $< -o $@ $(TAILS)
 
-$(BIN_DIR)/rfcomm-receive.o: rfcomm-server.cpp $(BIN_DIR)/.dirstamp
-	$(CXX) $(FLAGS) -c $< -o $@ $(TAILS)
+$(BIN_DIR)/rfcomm-receive: rfcomm-server.cpp $(BIN_DIR)/.dirstamp
+	$(CXX) $(FLAGS) $< -o $@ $(TAILS)
 	
 .PHONY: clean
 clean:
