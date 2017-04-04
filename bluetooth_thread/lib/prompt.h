@@ -30,9 +30,9 @@ int prompt_device(std::string& input, const int& max_num) {
 		getline(std::cin, input);
 		ss << input;
 		
-		if (ss >> choice && (choice <= 0 || choice > max_num)) {
-			//break;
-			continue;
+		if (ss >> choice && (choice >= 0 && choice < max_num)) {
+			// success
+			break;
 		}
 		else {
 			// clear the string stream

@@ -125,8 +125,10 @@ void scanBluetooth(inquiry_info *&ii, char*& dest) {
 
 	int device_choice = prompt_device(input, num_rsp);
 
-	ba2str(&(ii + device_choice - 1)->bdaddr, dest);
-	//printf("%s\n", dest);
+	if (device_choice != -1) {
+		ba2str(&(ii + device_choice - 1)->bdaddr, dest);
+		printf("%s\n", dest);
+	}
 }
 
 void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, int& sock) {
