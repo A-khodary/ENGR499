@@ -13,7 +13,7 @@
 using namespace std;
 
 void print_menu();
-int prompt_device(char*, const int&);
+//int prompt_device(char*, const int&);
 void exchangeMsgs(deque<string>&, deque<string>&);
 
 void scanBluetooth(inquiry_info *&, char*&);
