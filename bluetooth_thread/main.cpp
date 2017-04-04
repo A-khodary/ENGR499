@@ -125,9 +125,12 @@ void scanBluetooth(inquiry_info *&ii, char*& dest) {
 
 	int device_choice = prompt_device(input, num_rsp);
 
-	if (device_choice != -1) {
+	if (device_choice > 0) {
 		ba2str(&(ii + device_choice - 1)->bdaddr, dest);
 		printf("%s\n", dest);
+	}
+	else {
+		printf("invalid choice: %d\n", device_choice);
 	}
 }
 
