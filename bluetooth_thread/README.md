@@ -25,3 +25,11 @@ use `./bin/main`
 ###2. send data
 ###3. receive data
 ###4. threaded
+
+
+##Notes
+###1. Devices Bluetooth MAC:
+1) 00:04:4B:66:9F:3A
+// the one Cathy has
+2) 00:04:4B:65:BB:42
+// the one Emma has
