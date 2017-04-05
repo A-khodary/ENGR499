@@ -16,13 +16,13 @@ void print_menu();
 //int prompt_device(char*, const int&);
 void exchangeMsgs(deque<string>&, deque<string>&);
 
-void scanBluetooth(inquiry_info *&, char*&);
-
 void runBluetoothSend(deque<string>&, deque<string>&, char*, int&);
 void runBluetoothReceive(deque<string>&, deque<string>&, int&);
 
 mutex mtx;
 condition_variable bt_send, bt_receive;
+unique_lock<mutex> sendLock(mtx);
+unique_lock<mutex> receiveLock(mtx);
 
 int main(int argc, char **argv)
 {
@@ -75,68 +75,8 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-
-void scanBluetooth(inquiry_info *&ii, char*& dest) {
-	int sock;
-	int max_rsp = 255, num_rsp = -1;
-
-	// cstring because the library is written in C
-	char addr[BT_ADDR_SIZE] = { 0 };
-	char name[248] = { 0 };
-
-	string input("");
-
-	if (bt_scan(&ii, max_rsp, num_rsp, sock) != 0) {
-		num_rsp = -1;
-		throw runtime_error("Cannot scan");
-	}
-
-	while (num_rsp <= 0) {
-		printf("No available device\n");
-		num_rsp = -1;
-
-		printf("Do you want to scan again?\n");
-		printf("Enter 1 to scan again\n");
-		printf("Enter anything else to quit\n");
-		getline(cin, input);
-
-		if (input[0] != '1') {
-			break;
-		}
-
-		if (bt_scan(&ii, max_rsp, num_rsp, sock) != 0) {
-			num_rsp = -1;
-		}
-	}
-
-	for (int i = 0; i < num_rsp; i++) {
-		// convert to address
-		ba2str(&(ii + i)->bdaddr, addr);
-
-		if (hci_read_remote_name(sock, &(ii + i)->bdaddr, sizeof(name),
-			name, 0) < 0) {
-			printf("\t%i. %s  [unknown]\n", i + 1, addr);
-		}
-		else {
-			printf("\t%i. %s  %s\n", i + 1, addr, name);
-		}
-	}
-
-	close(sock);
-
-	int device_choice = prompt_device(input, num_rsp);
-
-	if (device_choice > 0) {
-		ba2str(&(ii + device_choice - 1)->bdaddr, dest);
-		printf("%s\n", dest);
-	}
-	else {
-		printf("invalid choice: %d\n", device_choice);
-	}
-}
-
 void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, int& sock) {
-	unique_lock<mutex> lck(mtx);
+	//unique_lock<mutex> lck(mtx);
 
 	//int index = 0;
 	int status = 0;
@@ -158,8 +98,9 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 
 		if (msgs.empty()) {
 			cout << "Thread: acquire sending lock" << endl;
-			bt_send.wait(lck);
+			//bt_send.wait(lck);
 			//bt_receive.notify_one();
+			bt_send.wait(sendLock);
 		}
 
 	}
@@ -168,7 +109,7 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 }
 
 void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) {
-	unique_lock<mutex> lck(mtx);
+	//unique_lock<mutex> lck(mtx);
 
 	// initialize variables
 	struct sockaddr_rc local_address = { 0 };
