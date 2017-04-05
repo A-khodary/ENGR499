@@ -61,7 +61,7 @@ int main()
 	float prevaccelresid[3] ={0,0,0};
 	printf("%ld,%ld \n",now,startTimer);
 	
-	while((now-startTimer)<300000000)
+	while((now-startTimer)<20000000)
 	{
 		//Poll at recommended IMU rate
 		usleep(imu->IMUGetPollInterval() *1000);
