@@ -13,6 +13,7 @@
 
 using namespace std;
 
+// gpio36 = pin 32, gpio37 = pin 37, gpio38 = pin 13, gpio63 = pin 33, gpio184 = pin 18, gpio186 = pin 31, gpio187 = pin 37, gpio219 = pin 29
 jetsonTX1GPIONumber GPIOs[8] = {gpio36, gpio37, gpio38, gpio63, gpio184, gpio186, gpio187, gpio219};
 
 thread threads[8];
@@ -20,36 +21,36 @@ int fanData[8];
 mutex fanMutex[8];
 condition_variable fanCV[8];
 
-void TurnFanOn(int onPercent, int gpio) {
+void TurnFanOn(int onPercent, int i) {
     int offPercent = 100-onPercent;
-	gpioExport(GPIOs[gpio]);
-	gpioSetDirection(GPIOs[gpio], outputPin);
+	gpioExport(GPIOs[i]);
+	gpioSetDirection(GPIOs[i], outputPin);
 	cout << "Turning fan on" << endl;
 	for(int q =0; q < 100; q++) {
-		gpioSetValue(GPIOs[gpio], on);
+		gpioSetValue(GPIOs[i], on);
 		usleep(onPercent*1000);     
-		gpioSetValue(GPIOs[gpio], off);
+		gpioSetValue(GPIOs[i], off);
 		usleep(offPercent*1000);
 	}        
 	cout << "Turning fan off" << endl;
-	gpioUnexport(GPIOs[gpio]);
+	gpioUnexport(GPIOs[i]);
 }
 
 void fanThread(int i) {
     while(1) {
-	// Wait until main() sends data
-	std::unique_lock<std::mutex> lock(fanMutex[i]);
-    fanCV[i].wait(lock);
- 
-    // after the wait, we own the lock.
-    std::cout << "Fan thread is turning on fan\n";
-    TurnFanOn(fanData[i], i);
-    std::cout << "Fan thread done\n";
- 
-    // Manual unlocking is done before notifying, to avoid waking up
-    // the waiting thread only to block again (see notify_one for details)
-    lock.unlock();
-    fanCV[i].notify_one();
+		// Wait until main() sends data
+		std::unique_lock<std::mutex> lock(fanMutex[i]);
+		fanCV[i].wait(lock);
+	 
+		// after the wait, we own the lock.
+		std::cout << "Fan thread is turning on fan\n";
+		TurnFanOn(fanData[i], i);
+		std::cout << "Fan thread done\n";
+	 
+		// Manual unlocking is done before notifying, to avoid waking up
+		// the waiting thread only to block again (see notify_one for details)
+		lock.unlock();
+		fanCV[i].notify_one();
     }
 }
 
@@ -58,6 +59,12 @@ void wakeUpFanThread(int i) {
 	fanCV[i].notify_one(); //notify one
 }
 
+void powerDown() {
+	for(int i = 0; i < 8; i++) {
+		gpioSetValue(GPIOs[i], off);
+		gpioUnexport(GPIOs[i]);
+	}
+}
 
 void moveForward(int onPercent) {
 	fanData[1] = onPercent;
@@ -84,7 +91,6 @@ void moveRight(int onPercent) {
 	wakeUpFanThread(8);
 }
 
-
 void turnCCW(int onPercent) {
 	fanData[1] = onPercent;
 	fanData[3] = onPercent;
@@ -106,47 +112,84 @@ void turnCW(int onPercent) {
 	wakeUpFanThread(8);
 } 
 
-
 int main() {
 	int i;
+	bool leftRobot = true;
+	bool rightRobot = false;
+	//Must make sure not over rotated leading to wire twist!
+	int totalRotation = 0;
+	
 	for(i=0; i<8; i++) {
 		threads[i] = thread(fanThread, i);
 	}
-	//Testing all 8 fans
-	cout << "Testing all 8 fans" << endl;
-	
-	for(i=0; i<8; i++) {
-		wakeUpFanThread(i);
-	}
+
+	usleep(1000);
 	
 	cout << "tesing move forward" << endl;
 	moveForward(50);
-	
+	usleep(1000000);
 	cout << "tesing move backward" << endl;
 	moveBackward(50);
-	
+	usleep(1000000);
 	cout << "tesing move left" << endl;
 	moveLeft(50);
-	
+	usleep(1000000);
 	cout << "tesing move right" << endl;
 	moveRight(50);
-	
+	usleep(1000000);
 	cout << "tesing turn CW" << endl;
 	turnCW(50);
-	
+	usleep(1000000);
 	cout << "tesing turn CCW" << endl;
 	turnCCW(50);
+	usleep(1000000);
 	
-	while(true) {
-		int fanNum;
-		int time;
-		cout << "Please enter the number(1-8) of the fan you would like to turn on" << endl;
-		cin >> fanNum;
-		
-		wakeUpFanThread(fanNum);
+	//Startup movement code, if found break
+		//Turn in a circle slowly, until full revolution
+		while(/*imu says not full rotation? AND NOT PAST MAX ROTATION*/) {
+			turnCW(50);
+		}
+		//If Left robot, move toward wall - stop at 3in? and slowly move sideways along it - turning as each corner is reached to move along new wall
+		if(leftRobot) {
+			while(/*imu says not near edge*/) {
+				moveForward(50);
+			}
+			while (1) {
+				while(/*imu says not near corner*/) {
+					moveLeft(50);
+				}
+				while(/*imu says not quarter rotation? AND NOT PAST MAX ROTATION*/) {
+					turnCW(50);
+				}
+			}
+		}
+		//If Right robot, move toward wall - stop at 3in? and slowly move sideways along it - turning as each corner is reached to move along new wall
+		else if(rightRobot) {
+			while(/*imu says not near edge*/) {
+				moveForward(50);
+			}
+			while (1) {
+				while(/*imu says not near corner*/) {
+					moveRight(50);
+				}
+				while(/*imu says not quarter rotation? AND NOT PAST MAX ROTATION*/) {
+					turnCCW(50);
+				}
+			}
+		}
+		//If Center robot, keep turning in circle
+		else {
+			while(true) {
+				if(/* not past max rotation */) {
+					turnCW(50);
+				} else {
+					turnCCW(50);	
+				}
+			}
+		}
 		
 	
-	}
+	
 
 }
 
