@@ -9,6 +9,8 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <signal.h>
+
 
 
 using namespace std;
@@ -25,14 +27,12 @@ void TurnFanOn(int onPercent, int i) {
     int offPercent = 100-onPercent;
 	gpioExport(GPIOs[i]);
 	gpioSetDirection(GPIOs[i], outputPin);
-	cout << "Turning fan on" << endl;
 	for(int q =0; q < 100; q++) {
 		gpioSetValue(GPIOs[i], on);
 		usleep(onPercent*1000);     
 		gpioSetValue(GPIOs[i], off);
 		usleep(offPercent*1000);
 	}        
-	cout << "Turning fan off" << endl;
 	gpioUnexport(GPIOs[i]);
 }
 
@@ -59,39 +59,50 @@ void wakeUpFanThread(int i) {
 	fanCV[i].notify_one(); //notify one
 }
 
-void powerDown() {
+void powerDown(int sig) {
 	for(int i = 0; i < 8; i++) {
 		gpioSetValue(GPIOs[i], off);
 		gpioUnexport(GPIOs[i]);
 	}
+	exit(1);
 }
 
 void moveForward(int onPercent) {
-	fanData[1] = onPercent;
-	fanData[6] = onPercent;
-	wakeUpFanThread(1);
-	wakeUpFanThread(6);
-}
-void moveBackward(int onPercent) {
-	fanData[2] = onPercent;
+	fanData[0] = onPercent;
 	fanData[5] = onPercent;
-	wakeUpFanThread(2);
+	wakeUpFanThread(0);
 	wakeUpFanThread(5);
 }
-void moveLeft(int onPercent) {
+void moveBackward(int onPercent) {
+	fanData[1] = onPercent;
 	fanData[4] = onPercent;
-	fanData[7] = onPercent;
+	wakeUpFanThread(1);
 	wakeUpFanThread(4);
-	wakeUpFanThread(7);
+}
+void moveLeft(int onPercent) {
+	fanData[3] = onPercent;
+	fanData[6] = onPercent;
+	wakeUpFanThread(3);
+	wakeUpFanThread(6);
 }
 void moveRight(int onPercent) {
-	fanData[3] = onPercent;
-	fanData[8] = onPercent;
-	wakeUpFanThread(3);
-	wakeUpFanThread(8);
+	fanData[2] = onPercent;
+	fanData[7] = onPercent;
+	wakeUpFanThread(2);
+	wakeUpFanThread(7);
 }
 
 void turnCCW(int onPercent) {
+	fanData[0] = onPercent;
+	fanData[2] = onPercent;
+	fanData[4] = onPercent;
+	fanData[6] = onPercent;
+	wakeUpFanThread(0);
+	wakeUpFanThread(2);
+	wakeUpFanThread(4);
+	wakeUpFanThread(6);
+}
+void turnCW(int onPercent) {
 	fanData[1] = onPercent;
 	fanData[3] = onPercent;
 	fanData[5] = onPercent;
@@ -100,16 +111,6 @@ void turnCCW(int onPercent) {
 	wakeUpFanThread(3);
 	wakeUpFanThread(5);
 	wakeUpFanThread(7);
-}
-void turnCW(int onPercent) {
-	fanData[2] = onPercent;
-	fanData[4] = onPercent;
-	fanData[6] = onPercent;
-	fanData[8] = onPercent;
-	wakeUpFanThread(2);
-	wakeUpFanThread(4);
-	wakeUpFanThread(6);
-	wakeUpFanThread(8);
 } 
 
 int main() {
@@ -123,70 +124,38 @@ int main() {
 		threads[i] = thread(fanThread, i);
 	}
 
-	usleep(1000);
-	
+	struct sigaction sigIntHandler;
+	sigIntHandler.sa_handler = powerDown;
+	sigemptyset(&sigIntHandler.sa_mask);
+	sigIntHandler.sa_flags = 0;
+	sigaction(SIGINT, &sigIntHandler, 0);
+
+
+	usleep(5000000);
+
+	int onPercent = 10;
+
 	cout << "tesing move forward" << endl;
-	moveForward(50);
-	usleep(1000000);
+	moveForward(onPercent);
+	usleep(10000000);
 	cout << "tesing move backward" << endl;
-	moveBackward(50);
-	usleep(1000000);
+	moveBackward(onPercent);
+	usleep(10000000);
 	cout << "tesing move left" << endl;
-	moveLeft(50);
-	usleep(1000000);
+	moveLeft(onPercent);
+	usleep(10000000);
 	cout << "tesing move right" << endl;
-	moveRight(50);
-	usleep(1000000);
+	moveRight(onPercent);
+	usleep(10000000);
 	cout << "tesing turn CW" << endl;
-	turnCW(50);
-	usleep(1000000);
+	turnCW(onPercent);
+	usleep(10000000);
 	cout << "tesing turn CCW" << endl;
-	turnCCW(50);
-	usleep(1000000);
+	turnCCW(onPercent);
+	usleep(10000000);
 	
-	//Startup movement code, if found break
-		//Turn in a circle slowly, until full revolution
-		while(/*imu says not full rotation? AND NOT PAST MAX ROTATION*/) {
-			turnCW(50);
-		}
-		//If Left robot, move toward wall - stop at 3in? and slowly move sideways along it - turning as each corner is reached to move along new wall
-		if(leftRobot) {
-			while(/*imu says not near edge*/) {
-				moveForward(50);
-			}
-			while (1) {
-				while(/*imu says not near corner*/) {
-					moveLeft(50);
-				}
-				while(/*imu says not quarter rotation? AND NOT PAST MAX ROTATION*/) {
-					turnCW(50);
-				}
-			}
-		}
-		//If Right robot, move toward wall - stop at 3in? and slowly move sideways along it - turning as each corner is reached to move along new wall
-		else if(rightRobot) {
-			while(/*imu says not near edge*/) {
-				moveForward(50);
-			}
-			while (1) {
-				while(/*imu says not near corner*/) {
-					moveRight(50);
-				}
-				while(/*imu says not quarter rotation? AND NOT PAST MAX ROTATION*/) {
-					turnCCW(50);
-				}
-			}
-		}
-		//If Center robot, keep turning in circle
-		else {
-			while(true) {
-				if(/* not past max rotation */) {
-					turnCW(50);
-				} else {
-					turnCCW(50);	
-				}
-			}
-		}
+
+while(1) {}
 		
 	
 	
