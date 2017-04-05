@@ -151,7 +151,7 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 				// break the sending loop
 				break;
 			}
-			cout << "Msg sent: \"" << msg[i] << "\"" << endl;
+			cout << "Msg sent: \"" << msgs[i] << "\"" << endl;
 			msgs.pop_front();
 		}
 
