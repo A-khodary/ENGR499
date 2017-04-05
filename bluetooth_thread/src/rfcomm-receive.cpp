@@ -27,6 +27,7 @@ int rfcomm_receive(struct sockaddr_rc& local_address,
 	std::deque<std::string>& msgs)
 {
 	int status = 0;
+	printf("receiving...\n");
 
     // accept one connection
     client = accept(sock, (struct sockaddr *)&remote_addr, &opt);

@@ -28,20 +28,20 @@ int main(int argc, char **argv)
 {
 	inquiry_info *ii = NULL;
 	char* dest = new char[BT_ADDR_SIZE];
-	// strcpy(dest, "00:04:4B:66:9F:3A");
+	strcpy(dest, "00:04:4B:66:9F:3A");
 	// strcpy(dest, "00:04:4B:65:BB:42");
 
 	// sockets for sending and recieving thread
 	int send_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 	int receive_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
-	try {
+	/*try {
 		scanBluetooth(ii, dest);
 	}
 	catch (runtime_error& ex) {
 		cerr << "Exception caught: " << ex.what() << endl;
 		return 1;
-	}
+	}*/
 	printf("Device selected: %s\n", dest);
 
 	deque<string> send_msgs;
@@ -57,6 +57,7 @@ int main(int argc, char **argv)
 		cin >> temp;
 		send_msgs.push_back(temp);
 
+		printf("Main: wake up sending thread\n");
 		// wake up sending thread
 		bt_send.notify_one();
 		temp.clear();
@@ -150,10 +151,12 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 				// break the sending loop
 				break;
 			}
+			cout << "Msg sent: \"" << msg[i] << "\"" << endl;
 			msgs.pop_front();
 		}
 
 		if (msgs.empty()) {
+			cout << "Thread: acquire sending lock" << endl;
 			bt_send.wait(lck);
 			//bt_receive.notify_one();
 		}
@@ -181,14 +184,7 @@ void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) 
 		my_bdaddr_any, sock);
 
 	while (true) {
-		/*if (msgs.empty()) {
-			// srcQ -> destQ
-			exchangeMsgs(msgs, otherQ);
-			bt_receive.wait(lck);
-			bt_send.notify_one();
-			continue;
-		}*/
-
+		printf("Thread: listening: \n");
 		if (rfcomm_receive(local_address, remote_addr,
 			my_bdaddr_any, buffer, opt, client
 			, sock, msgs) != 0) {
