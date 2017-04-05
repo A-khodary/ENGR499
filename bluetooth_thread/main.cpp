@@ -20,10 +20,12 @@ void runBluetoothSend(deque<string>&, deque<string>&, char*, int&);
 void runBluetoothReceive(deque<string>&, deque<string>&, int&);
 
 mutex mtx;
-condition_variable bt_send, bt_receive;
+condition_variable bt_send, bt_receive, main_cv;
 
 int main(int argc, char **argv)
 {
+	unique_lock<mutex> lck(mtx);
+
 	inquiry_info *ii = NULL;
 	char* dest = new char[BT_ADDR_SIZE];
 	strcpy(dest, "00:04:4B:66:9F:3A");
@@ -33,13 +35,6 @@ int main(int argc, char **argv)
 	int send_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 	int receive_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
-	/*try {
-		scanBluetooth(ii, dest);
-	}
-	catch (runtime_error& ex) {
-		cerr << "Exception caught: " << ex.what() << endl;
-		return 1;
-	}*/
 	printf("Device selected: %s\n", dest);
 
 	deque<string> send_msgs;
@@ -60,6 +55,7 @@ int main(int argc, char **argv)
 		bt_send.notify_one();
 		cout << "waked up!!" << endl;
 		temp.clear();
+		main_cv.wait(lck);
 	}
 
 	bt_sendThread.join();
@@ -96,6 +92,7 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 		}
 
 		if (msgs.empty()) {
+			main_cv.notify_one();
 			cout << "Thread: acquire sending lock" << endl;
 			bt_send.wait(lck);
 			//bt_receive.notify_one();
