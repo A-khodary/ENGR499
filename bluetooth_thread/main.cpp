@@ -24,12 +24,10 @@ condition_variable bt_send, bt_receive, main_cv;
 
 int main(int argc, char **argv)
 {
-	unique_lock<mutex> lck(mtx);
-
 	inquiry_info *ii = NULL;
 	char* dest = new char[BT_ADDR_SIZE];
-	strcpy(dest, "00:04:4B:66:9F:3A");
-	// strcpy(dest, "00:04:4B:65:BB:42");
+	//strcpy(dest, "00:04:4B:66:9F:3A");
+	strcpy(dest, "00:04:4B:65:BB:42");
 
 	// sockets for sending and recieving thread
 	int send_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
@@ -45,18 +43,21 @@ int main(int argc, char **argv)
 	thread bt_sendThread(runBluetoothSend, std::ref(send_msgs), std::ref(bufferQ), dest, std::ref(send_sock));
 	thread bt_receiveThread(runBluetoothReceive, std::ref(received_msgs), std::ref(bufferQ), std::ref(receive_sock));
 
+	unique_lock<mutex> lck(mtx);
 	string temp;
 	while (true) {
+		lck.unlock();
 		cout << "> Say something: ";
 		cin >> temp;
 		send_msgs.push_back(temp);
 
 		printf("Main: wake up sending thread\n");
 		// wake up sending thread
+		lck.lock();
 		bt_send.notify_one();
 		cout << "waked up!!" << endl;
 		temp.clear();
-		main_cv.wait(lck);
+		//main_cv.wait(lck);
 	}
 
 	bt_sendThread.join();
@@ -73,9 +74,11 @@ int main(int argc, char **argv)
 
 void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, int& sock) {
 	unique_lock<mutex> lck(mtx);
+	lck.unlock();
 	cout << "Thread: send begin" << endl;
 	//int index = 0;
 	int status = 0;
+
 	while (true) {
 		printf("Thread: sending\n");
 		for (int i = 0, size = msgs.size(); i < size; i++) {
@@ -92,13 +95,16 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 			msgs.pop_front();
 		}
 
+		
+		//main_cv.notify_one();
+		lck.lock();		
 		if (msgs.empty()) {
-			main_cv.notify_one();
 			cout << "Thread: acquire sending lock" << endl;
 			bt_send.wait(lck);
 			//bt_receive.notify_one();
 			//bt_send.wait(sendLock);
 		}
+		lck.unlock();
 
 	}
 
@@ -106,7 +112,8 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 }
 
 void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) {
-	unique_lock<mutex> lck(mtx);
+	//unique_lock<mutex> lck(mtx);
+	//lck.unlock();
 
 	cout << "Thread: receive begin" << endl;
 
@@ -130,6 +137,9 @@ void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) 
 			my_bdaddr_any, buffer, opt, client
 			, sock, msgs) != 0) {
 			printf("Failed: unable to receive data\n");
+		}
+		else {
+			cout << buffer << endl;
 		}
 	}
 
