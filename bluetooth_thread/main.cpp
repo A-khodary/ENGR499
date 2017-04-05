@@ -141,6 +141,7 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 	//int index = 0;
 	int status = 0;
 	while (true) {
+		printf("Thread: sending\n");
 		for (int i = 0, size = msgs.size(); i < size; i++) {
 			//it = msgs.begin();
 
