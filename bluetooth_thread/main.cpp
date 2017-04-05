@@ -47,6 +47,7 @@ int main(int argc, char **argv)
 
 	string temp;
 	while (true) {
+		cout << "> Say something: ";
 		cin >> temp;
 		send_msgs.push_back(temp);
 
