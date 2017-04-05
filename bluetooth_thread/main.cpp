@@ -21,8 +21,6 @@ void runBluetoothReceive(deque<string>&, deque<string>&, int&);
 
 mutex mtx;
 condition_variable bt_send, bt_receive;
-unique_lock<mutex> sendLock(mtx);
-unique_lock<mutex> receiveLock(mtx);
 
 int main(int argc, char **argv)
 {
@@ -60,6 +58,7 @@ int main(int argc, char **argv)
 		printf("Main: wake up sending thread\n");
 		// wake up sending thread
 		bt_send.notify_one();
+		cout << "waked up!!" << endl;
 		temp.clear();
 	}
 
@@ -76,8 +75,8 @@ int main(int argc, char **argv)
 }
 
 void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, int& sock) {
-	//unique_lock<mutex> lck(mtx);
-
+	unique_lock<mutex> lck(mtx);
+	cout << "Thread: send begin" << endl;
 	//int index = 0;
 	int status = 0;
 	while (true) {
@@ -98,9 +97,9 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 
 		if (msgs.empty()) {
 			cout << "Thread: acquire sending lock" << endl;
-			//bt_send.wait(lck);
+			bt_send.wait(lck);
 			//bt_receive.notify_one();
-			bt_send.wait(sendLock);
+			//bt_send.wait(sendLock);
 		}
 
 	}
@@ -109,7 +108,9 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 }
 
 void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) {
-	//unique_lock<mutex> lck(mtx);
+	unique_lock<mutex> lck(mtx);
+
+	cout << "Thread: receive begin" << endl;
 
 	// initialize variables
 	struct sockaddr_rc local_address = { 0 };
