@@ -1,11 +1,7 @@
 #include "../lib/rfcomm.h"
 
-void initRfcommSend(int& sock) {
+int initRfcommSend(int& sock, char* dest) {
 	//
-}
-
-int rfcomm_send(int &sock, char* dest, std::string& msg)
-{
 	struct sockaddr_rc addr = { 0 };
 	int status;
 
@@ -17,11 +13,21 @@ int rfcomm_send(int &sock, char* dest, std::string& msg)
 
 	// connect to server
 	status = connect(sock, (struct sockaddr *)&addr, sizeof(addr));
-	
-	// send a message
-	if (status == 0) {
-		status = write(sock, msg.c_str(), msg.size());
+
+	if (status < 0) {
+		printf("Could not connect for sending!!\n");
+		//return 1;
 	}
+
+	return status;
+}
+
+int rfcomm_send(int &sock, char* dest, std::string& msg)
+{	
+	int status = 0;
+	(void) dest;
+	status = write(sock, msg.c_str(), msg.size());
+	
 
 	if (status < 0) {
 		perror("Error");

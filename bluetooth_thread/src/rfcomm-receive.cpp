@@ -3,6 +3,8 @@
 void initRfcommReceive(struct sockaddr_rc& local_address,
 	struct sockaddr_rc& remote_addr,
 	bdaddr_t my_bdaddr_any,
+	socklen_t opt,
+	int& client,
 	int& sock)
 {
 	
@@ -15,6 +17,9 @@ void initRfcommReceive(struct sockaddr_rc& local_address,
 
 	// put socket into listening mode
 	printf("socket listening mode status: %d\n", listen(sock, 1));
+
+	// accept one connection
+    	client = accept(sock, (struct sockaddr *)&remote_addr, &opt);
 }
 
 int rfcomm_receive(struct sockaddr_rc& local_address,
@@ -29,9 +34,7 @@ int rfcomm_receive(struct sockaddr_rc& local_address,
 	int status = 0;
 	printf("receiving...\n");
 
-    // accept one connection
-    client = accept(sock, (struct sockaddr *)&remote_addr, &opt);
-
+    
     ba2str( &remote_addr.rc_bdaddr, buf );
     fprintf(stderr, "accepted connection from %s\n", buf);
     memset(buf, 0, strlen(buf) + 1);

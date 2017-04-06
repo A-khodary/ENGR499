@@ -77,7 +77,7 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 	lck.unlock();
 	cout << "Thread: send begin" << endl;
 	//int index = 0;
-	int status = 0;
+	int status = initRfcommSend(sock, dest);
 
 	while (true) {
 		printf("Thread: sending\n");
@@ -129,7 +129,7 @@ void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) 
 
 	// call function to initialize the receiving thread
 	initRfcommReceive(local_address, remote_addr,
-		my_bdaddr_any, sock);
+		my_bdaddr_any, opt, client, sock);
 
 	while (true) {
 		printf("Thread: listening: \n");
