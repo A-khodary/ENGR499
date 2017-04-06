@@ -84,19 +84,20 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 	while (true) {
 		printf("Thread: sending\n");
 		lck.lock();
-		for (int i = 0, size = msgs.size(); i < size; i++) {
+		printf("msgQ size = %d\n", (int)msgs.size());
+		for (int i = 0; (unsigned)i < msgs.size(); i++) {
 			//it = msgs.begin();
 
 			status = rfcomm_send(sock, dest, msgs[0]);
-			if (status != 0) {
+			if (status <= 0) {
 				printf("Failed: unable to send data\n");
 
 				// break the sending loop
 				break;
 			}
 			cout << "Msg sent: \"" << msgs[0] << "\"" << endl;
-			msgs.pop_front();
 		}
+		msgs.clear();
 		lck.unlock();
 
 		
@@ -139,7 +140,7 @@ void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) 
 		printf("Thread: listening: \n");
 		if (rfcomm_receive(local_address, remote_addr,
 			my_bdaddr_any, buffer, opt, client
-			, sock) != 0) {
+			, sock) <= 0) {
 			printf("Failed: unable to receive data\n");
 		}
 		else {

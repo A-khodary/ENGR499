@@ -27,14 +27,14 @@ int rfcomm_send(int &sock, char* dest, std::string& msg)
 	int status = 0;
 	(void) dest;
 	status = write(sock, msg.c_str(), msg.size());
-	
+	//printf("status: %d\n", status);
 
 	if (status < 0) {
 		perror("Error");
 		//return 1;
 	}
 
-	// status = 0: success
-	// status = -1: error
+	// status <= 0: error
+	// status >0: return size of received string
 	return status;
 }

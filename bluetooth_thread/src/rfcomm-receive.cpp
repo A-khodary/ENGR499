@@ -44,7 +44,7 @@ int rfcomm_receive(struct sockaddr_rc& local_address,
         printf("received \"%s\".\n", buf);
 	}
 
-	// status = 0: success
-	// status = -1: error
+	// status <= 0: error
+	// status >0: return size of received string
     return status;
 }
