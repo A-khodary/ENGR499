@@ -49,11 +49,13 @@ int main(int argc, char **argv)
 		lck.unlock();
 		cout << "> Say something: ";
 		cin >> temp;
-		send_msgs.push_back(temp);
+		cout << "try to send \"" << temp << "\"" << endl;
 
 		printf("Main: wake up sending thread\n");
-		// wake up sending thread
+		
 		lck.lock();
+		send_msgs.push_back(temp);
+		// wake up sending thread
 		bt_send.notify_one();
 		cout << "waked up!!" << endl;
 		temp.clear();
@@ -81,6 +83,7 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 
 	while (true) {
 		printf("Thread: sending\n");
+		lck.lock();
 		for (int i = 0, size = msgs.size(); i < size; i++) {
 			//it = msgs.begin();
 
@@ -91,9 +94,10 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 				// break the sending loop
 				break;
 			}
-			cout << "Msg sent: \"" << msgs[i] << "\"" << endl;
+			cout << "Msg sent: \"" << msgs[0] << "\"" << endl;
 			msgs.pop_front();
 		}
+		lck.unlock();
 
 		
 		//main_cv.notify_one();
@@ -112,8 +116,8 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 }
 
 void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) {
-	//unique_lock<mutex> lck(mtx);
-	//lck.unlock();
+	unique_lock<mutex> lck(mtx);
+	lck.unlock();
 
 	cout << "Thread: receive begin" << endl;
 
@@ -135,15 +139,18 @@ void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) 
 		printf("Thread: listening: \n");
 		if (rfcomm_receive(local_address, remote_addr,
 			my_bdaddr_any, buffer, opt, client
-			, sock, msgs) != 0) {
+			, sock) != 0) {
 			printf("Failed: unable to receive data\n");
 		}
 		else {
 			cout << buffer << endl;
+			lck.lock();
+			msgs.push_back(string(buffer));
+			lck.unlock();
 		}
 	}
 
-	close(client);
+	//close(client);
 	//close(sock);
 }
 

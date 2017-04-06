@@ -15,7 +15,7 @@ int initRfcommSend(int& sock, char* dest) {
 	status = connect(sock, (struct sockaddr *)&addr, sizeof(addr));
 
 	if (status < 0) {
-		printf("Could not connect for sending!!\n");
+		printf("Could not connect %s for sending!!\n", dest);
 		//return 1;
 	}
 

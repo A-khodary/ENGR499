@@ -20,6 +20,7 @@ void initRfcommReceive(struct sockaddr_rc& local_address,
 
 	// accept one connection
     	client = accept(sock, (struct sockaddr *)&remote_addr, &opt);
+	printf("accepted connection\n");
 }
 
 int rfcomm_receive(struct sockaddr_rc& local_address,
@@ -28,21 +29,18 @@ int rfcomm_receive(struct sockaddr_rc& local_address,
 	char* buf,
 	socklen_t opt,
 	int& client,
-	int& sock,
-	std::deque<std::string>& msgs)
+	int& sock)
 {
 	int status = 0;
 	printf("receiving...\n");
 
     
     ba2str( &remote_addr.rc_bdaddr, buf );
-    fprintf(stderr, "accepted connection from %s\n", buf);
     memset(buf, 0, strlen(buf) + 1);
 
     // read data from the client
     status = read(client, buf, sizeof(buf));
     if( status > 0 ) {
-		msgs.push_back(std::string(buf));
         printf("received \"%s\".\n", buf);
 	}
 

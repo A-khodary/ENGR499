@@ -20,7 +20,6 @@ int rfcomm_receive(struct sockaddr_rc& local_address,
 	char* buf,
 	socklen_t opt,
 	int& client,
-	int& sock,
-	std::deque<std::string>& msgs);
+	int& sock);
 
 #endif
