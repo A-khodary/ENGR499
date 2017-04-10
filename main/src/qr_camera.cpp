@@ -113,12 +113,12 @@ void QRCamera::decodeFrame(cv::Mat frame) {
             current = localtime(&now);
 
             // do something useful with results
-            std::cout    << "[" << current->tm_hour << ":" << current->tm_min << ":" << std::setw(2) << std::setfill('0') << current->tm_sec << "] " << counter << " "
+            std::cout    << "CATHY: [" << current->tm_hour << ":" << current->tm_min << ":" << std::setw(2) << std::setfill('0') << current->tm_sec << "] " << counter << " "
                     << "decoded " << symbol->get_type_name()
                     << " symbol \"" << symbol->get_data() << '"' << std::endl;
 
-            std::cout << "Location: (" << symbol->get_location_x(0) << "," << symbol->get_location_y(0) << ")" << std::endl;
-            std::cout << "Size: " << symbol->get_location_size() << std::endl;
+            std::cout << "CATHY: Location: (" << symbol->get_location_x(0) << "," << symbol->get_location_y(0) << ")" << std::endl;
+            std::cout << "CATHY: Size: " << symbol->get_location_size() << std::endl;
 
             // Draw location of the symbols found
             if (symbol->get_location_size() == 4) {
@@ -149,7 +149,7 @@ void QRCamera::decodeFrame(cv::Mat frame) {
             // Mark the center of the code
             cv::Point2f mid = (topRightPoint+bottomRightPoint)*.5;
             cv::circle(frame, mid, 10, WHITE, 2);
-            std::cout << "qr code center: " << mid.x << ", " << mid.y << std::endl;
+            std::cout << "CATHY: qr code center: " << mid.x << ", " << mid.y << std::endl;
 
             // Find the angle of the code from the camera
             cv::Point imageCenter(frame.size().width/2, frame.size().height/2);
@@ -158,8 +158,8 @@ void QRCamera::decodeFrame(cv::Mat frame) {
             double angleFromCam = distanceFromCenter *.069337525;
             line(frame, imageCenter, mid, cv::Scalar(0, 255, 0), 2, 8, 0);
 
-            std::cout << "distance from center: " << distanceFromCenter << std::endl;
-            std::cout << "angle from cam: " << angleFromCam << std::endl;
+            std::cout << "CATHY: distance from center: " << distanceFromCenter << std::endl;
+            std::cout << "CATHY: angle from cam: " << angleFromCam << std::endl;
             std::stringstream stream;
             stream << angleFromCam;
             annotate(frame, stream.str() + "°", cv::Point(imageCenter.x + 20, imageCenter.y));

@@ -170,6 +170,10 @@ void ShapeCamera::RecognizeShapes(cv::Mat shapeImg)
 	      << std::setw(13) << string4 << ", angle5:"
 	      << std::setw(13) << string5 << '\r';
     */
+
+    std::cout << "BRIAN: angle3:" << std::setw(13) << string3
+	      << ", angle4:" << std::setw(13) << string4 << ", angle5:"
+	      << std::setw(13) << string5 << std::endl;; 
     
     //camera->ShowImage("Shape_Detection", drawing);
 }
