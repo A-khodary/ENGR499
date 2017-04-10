@@ -46,7 +46,6 @@ void TurnFanOn(int onPercent, int i) {
 void TurnFanOff(int i) {
 	gpioSetValue(GPIOs[i], off);
 	gpioUnexport(GPIOs[i]);
-	return 0;
 }
 
 void fanThread(int i) {
@@ -60,9 +59,9 @@ void fanThread(int i) {
 			TurnFanOff(i);
 		}
 		// after the wait, we own the lock.
-		std::cout << "Fan thread is turning on fan\n";
+		//std::cout << "Fan thread is turning on fan\n";
 		TurnFanOn(fanPower[i], i);
-		std::cout << "Fan thread done\n";
+		//std::cout << "Fan thread done\n";
 	 
 		// Manual unlocking is done before notifying, to avoid waking up
 		// the waiting thread only to block again (see notify_one for details)
@@ -77,10 +76,12 @@ void wakeUpFanThread(int i) {
 }
 
 void powerDown(int sig) {
+	cout << "power down function!" << endl;
 	for(int i = 0; i < 8; i++) {
 		fanPower[i] = -1;
 		wakeUpFanThread(i);
 		threads[i].join();
+cout << "i = " << i << endl;
 	}
 	exit(1);
 }
@@ -199,10 +200,11 @@ int main() {
 	sigaction(SIGINT, &sigIntHandler, 0);
 
 
-	usleep(5000000);
+	usleep(2000000);
 
 	int onPercent = 20;
 
+/*
 	cout << "tesing move forward" << endl;
 	moveForward(onPercent);
 	usleep(10000000);
@@ -221,13 +223,14 @@ int main() {
 	cout << "tesing turn CCW" << endl;
 	turnCCW(onPercent);
 	usleep(10000000);
-	
+*/
 	
 	//Turn in a circle slowly, until full revolution
-	
+	cout << "Start test" << endl;
 	int testing = 0;
 	checkRotation();
 	while(testing < 4/*imu says not full rotation?*/) {
+cout << "Rotating!" << endl;
 		if(MaxRotationCCW) {
 			turnCW(onPercent);
 		} else {
@@ -237,26 +240,31 @@ int main() {
 	}
 	// move toward wall
 	while(testing < 7/*imu says not near edge*/) {
+cout << "Moving toward edge" << endl;
 		moveForward(onPercent);
-		testing++:
+		testing++;
 	}
 	// slowly move sideways along wall, turning as each corner is reached to move along new wall
-	while (1) {
-		while(testing < 11/*imu says not near corner*/) {
-			moveRight(onPercent);
-			testing++;
-		}
-		checkRotation();
-		while(testing < 13/*imu says not quarter rotation? */) {
-			if(MaxRotationCCW) {
-			turnCW(onPercent);
-			} else {
-				turnCCW(onPercent);	
-			}
-			testing++;
-		}
+	while(testing < 11/*imu says not near corner*/) {
+cout << "Moving toward corner" << endl;
+		moveRight(onPercent);
+		testing++;
 	}
+	checkRotation();
+	while(testing < 13/*imu says not quarter rotation? */) {
+cout << "Rotating" << endl;
+		if(MaxRotationCCW) {
+		turnCW(onPercent);
+		} else {
+			turnCCW(onPercent);	
+		}
+		testing++;
+	}
+
 	
+	cout << "All done!!!!!!!!!!!!!!!!!!!!!" << endl;
+	
+
 	while(1) {}
 		
 	
