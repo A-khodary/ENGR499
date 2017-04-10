@@ -9,47 +9,64 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-
+#include <signal.h>
 
 using namespace std;
 
+// 1 = pin 32, 2 = pin 37, 3 = pin 13, 4 = pin 33, 5 = pin 18, 6 = pin 31, 7 = pin 37, 8 = pin 29
 jetsonTX1GPIONumber GPIOs[8] = {gpio36, gpio37, gpio38, gpio63, gpio184, gpio186, gpio187, gpio219};
 
 thread threads[8];
-int fanData[8];
+int fanPower[8];
+int fanTime[8];
 mutex fanMutex[8];
 condition_variable fanCV[8];
+bool MaxRotationCCW, MaxRotationCW;
 
-void TurnFanOn(int onPercent, int gpio) {
+
+void checkRotation(){
+	//Get info from imu!!!
+	MaxRotationCCW = false;
+	MaxRotationCW = false;
+}
+
+void TurnFanOn(int onPercent, int i) {
     int offPercent = 100-onPercent;
-	gpioExport(GPIOs[gpio]);
-	gpioSetDirection(GPIOs[gpio], outputPin);
-	cout << "Turning fan on" << endl;
+	gpioExport(GPIOs[i]);
+	gpioSetDirection(GPIOs[i], outputPin);
 	for(int q =0; q < 100; q++) {
-		gpioSetValue(GPIOs[gpio], on);
-		usleep(onPercent*1000);     
-		gpioSetValue(GPIOs[gpio], off);
-		usleep(offPercent*1000);
+		gpioSetValue(GPIOs[i], on);
+		usleep(onPercent*100);     
+		gpioSetValue(GPIOs[i], off);
+		usleep(offPercent*100);
 	}        
-	cout << "Turning fan off" << endl;
-	gpioUnexport(GPIOs[gpio]);
+	gpioUnexport(GPIOs[i]);
+}
+
+void TurnFanOff(int i) {
+	gpioSetValue(GPIOs[i], off);
+	gpioUnexport(GPIOs[i]);
 }
 
 void fanThread(int i) {
+	signal(SIGINT, SIG_IGN);
     while(1) {
-	// Wait until main() sends data
-	std::unique_lock<std::mutex> lock(fanMutex[i]);
-    fanCV[i].wait(lock);
- 
-    // after the wait, we own the lock.
-    std::cout << "Fan thread is turning on fan\n";
-    TurnFanOn(fanData[i], i);
-    std::cout << "Fan thread done\n";
- 
-    // Manual unlocking is done before notifying, to avoid waking up
-    // the waiting thread only to block again (see notify_one for details)
-    lock.unlock();
-    fanCV[i].notify_one();
+		// Wait until main() sends data
+		std::unique_lock<std::mutex> lock(fanMutex[i]);
+		fanCV[i].wait(lock);
+	 
+		if(fanPower[i] < 0) {
+			TurnFanOff(i);
+		}
+		// after the wait, we own the lock.
+		//std::cout << "Fan thread is turning on fan\n";
+		TurnFanOn(fanPower[i], i);
+		//std::cout << "Fan thread done\n";
+	 
+		// Manual unlocking is done before notifying, to avoid waking up
+		// the waiting thread only to block again (see notify_one for details)
+		lock.unlock();
+		fanCV[i].notify_one();
     }
 }
 
@@ -58,95 +75,200 @@ void wakeUpFanThread(int i) {
 	fanCV[i].notify_one(); //notify one
 }
 
+void powerDown(int sig) {
+	cout << "power down function!" << endl;
+	for(int i = 0; i < 8; i++) {
+		fanPower[i] = -1;
+		wakeUpFanThread(i);
+		threads[i].join();
+cout << "i = " << i << endl;
+	}
+	exit(1);
+}
 
 void moveForward(int onPercent) {
-	fanData[1] = onPercent;
-	fanData[6] = onPercent;
+	//go
+	fanPower[0] = onPercent;
+	fanPower[5] = onPercent;
+	wakeUpFanThread(0);
+	wakeUpFanThread(5);
+	usleep(1000000);
+	//stop
+	fanPower[1] = onPercent;
+	fanPower[4] = onPercent;
 	wakeUpFanThread(1);
-	wakeUpFanThread(6);
+	wakeUpFanThread(4);
 }
 void moveBackward(int onPercent) {
-	fanData[2] = onPercent;
-	fanData[5] = onPercent;
-	wakeUpFanThread(2);
+	//go
+	fanPower[1] = onPercent;
+	fanPower[4] = onPercent;
+	wakeUpFanThread(1);
+	wakeUpFanThread(4);
+	usleep(1000000);
+	//stop
+	fanPower[0] = onPercent;
+	fanPower[5] = onPercent;
+	wakeUpFanThread(0);
 	wakeUpFanThread(5);
 }
 void moveLeft(int onPercent) {
-	fanData[4] = onPercent;
-	fanData[7] = onPercent;
-	wakeUpFanThread(4);
+	//go
+	fanPower[3] = onPercent;
+	fanPower[6] = onPercent;
+	wakeUpFanThread(3);
+	wakeUpFanThread(6);
+	usleep(1000000);
+	//stop
+	fanPower[2] = onPercent;
+	fanPower[7] = onPercent;
+	wakeUpFanThread(2);
 	wakeUpFanThread(7);
 }
 void moveRight(int onPercent) {
-	fanData[3] = onPercent;
-	fanData[8] = onPercent;
+	//go
+	fanPower[2] = onPercent;
+	fanPower[7] = onPercent;
+	wakeUpFanThread(2);
+	wakeUpFanThread(7);
+	usleep(1000000);
+	//stop
+	fanPower[3] = onPercent;
+	fanPower[6] = onPercent;
 	wakeUpFanThread(3);
-	wakeUpFanThread(8);
+	wakeUpFanThread(6);
 }
 
-
 void turnCCW(int onPercent) {
-	fanData[1] = onPercent;
-	fanData[3] = onPercent;
-	fanData[5] = onPercent;
-	fanData[7] = onPercent;
+	//go
+	fanPower[0] = onPercent;
+	fanPower[2] = onPercent;
+	fanPower[4] = onPercent;
+	fanPower[6] = onPercent;
+	wakeUpFanThread(0);
+	wakeUpFanThread(2);
+	wakeUpFanThread(4);
+	wakeUpFanThread(6);
+	usleep(1000000);
+	//stop
+	fanPower[1] = onPercent;
+	fanPower[3] = onPercent;
+	fanPower[5] = onPercent;
+	fanPower[7] = onPercent;
 	wakeUpFanThread(1);
 	wakeUpFanThread(3);
 	wakeUpFanThread(5);
 	wakeUpFanThread(7);
 }
 void turnCW(int onPercent) {
-	fanData[2] = onPercent;
-	fanData[4] = onPercent;
-	fanData[6] = onPercent;
-	fanData[8] = onPercent;
+	//go
+	fanPower[1] = onPercent;
+	fanPower[3] = onPercent;
+	fanPower[5] = onPercent;
+	fanPower[7] = onPercent;
+	wakeUpFanThread(1);
+	wakeUpFanThread(3);
+	wakeUpFanThread(5);
+	wakeUpFanThread(7);
+	usleep(1000000);
+	//stop
+	fanPower[0] = onPercent;
+	fanPower[2] = onPercent;
+	fanPower[4] = onPercent;
+	fanPower[6] = onPercent;
+	wakeUpFanThread(0);
 	wakeUpFanThread(2);
 	wakeUpFanThread(4);
+	wakeUpFanThread(4);
 	wakeUpFanThread(6);
-	wakeUpFanThread(8);
 } 
-
 
 int main() {
 	int i;
+	bool leftRobot = true;
+	bool rightRobot = false;
+
+	
 	for(i=0; i<8; i++) {
 		threads[i] = thread(fanThread, i);
 	}
-	//Testing all 8 fans
-	cout << "Testing all 8 fans" << endl;
-	
-	for(i=0; i<8; i++) {
-		wakeUpFanThread(i);
-	}
-	
+
+	struct sigaction sigIntHandler;
+	sigIntHandler.sa_handler = powerDown;
+	sigemptyset(&sigIntHandler.sa_mask);
+	sigIntHandler.sa_flags = 0;
+	sigaction(SIGINT, &sigIntHandler, 0);
+
+
+	usleep(2000000);
+
+	int onPercent = 20;
+
+/*
 	cout << "tesing move forward" << endl;
-	moveForward(50);
-	
+	moveForward(onPercent);
+	usleep(10000000);
 	cout << "tesing move backward" << endl;
-	moveBackward(50);
-	
+	moveBackward(onPercent);
+	usleep(10000000);
 	cout << "tesing move left" << endl;
-	moveLeft(50);
-	
+	moveLeft(onPercent);
+	usleep(10000000);
 	cout << "tesing move right" << endl;
-	moveRight(50);
-	
+	moveRight(onPercent);
+	usleep(10000000);
 	cout << "tesing turn CW" << endl;
-	turnCW(50);
-	
+	turnCW(onPercent);
+	usleep(10000000);
 	cout << "tesing turn CCW" << endl;
-	turnCCW(50);
+	turnCCW(onPercent);
+	usleep(10000000);
+*/
 	
-	while(true) {
-		int fanNum;
-		int time;
-		cout << "Please enter the number(1-8) of the fan you would like to turn on" << endl;
-		cin >> fanNum;
-		
-		wakeUpFanThread(fanNum);
-		
-	
+	//Turn in a circle slowly, until full revolution
+	cout << "Start test" << endl;
+	int testing = 0;
+	checkRotation();
+	while(testing < 4/*imu says not full rotation?*/) {
+cout << "Rotating!" << endl;
+		if(MaxRotationCCW) {
+			turnCW(onPercent);
+		} else {
+			turnCCW(onPercent);
+		}
+		testing++;
 	}
+	// move toward wall
+	while(testing < 7/*imu says not near edge*/) {
+cout << "Moving toward edge" << endl;
+		moveForward(onPercent);
+		testing++;
+	}
+	// slowly move sideways along wall, turning as each corner is reached to move along new wall
+	while(testing < 11/*imu says not near corner*/) {
+cout << "Moving toward corner" << endl;
+		moveRight(onPercent);
+		testing++;
+	}
+	checkRotation();
+	while(testing < 13/*imu says not quarter rotation? */) {
+cout << "Rotating" << endl;
+		if(MaxRotationCCW) {
+		turnCW(onPercent);
+		} else {
+			turnCCW(onPercent);	
+		}
+		testing++;
+	}
+
+	
+	cout << "All done!!!!!!!!!!!!!!!!!!!!!" << endl;
+	
+
+	while(1) {}
+		
+	
+	
 
 }
 

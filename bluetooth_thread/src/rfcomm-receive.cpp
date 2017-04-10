@@ -1,39 +1,50 @@
 #include "../lib/rfcomm.h"
 
-int rfcomm_receive(int &sock, std::deque<std::string>& msgs)
+void initRfcommReceive(struct sockaddr_rc& local_address,
+	struct sockaddr_rc& remote_addr,
+	bdaddr_t my_bdaddr_any,
+	socklen_t opt,
+	int& client,
+	int& sock)
 {
-    struct sockaddr_rc local_address = { 0 }, remote_addr = { 0 };
-    char buf[1024] = { 0 };
-    int client, bytes_read;
-    socklen_t opt = sizeof(remote_addr);
+	
+	local_address.rc_family = AF_BLUETOOTH;
+	local_address.rc_bdaddr = my_bdaddr_any;
+	
+	// set to 0, binds the socket to the first available port
+	local_address.rc_channel = (uint8_t)0;
+	bind(sock, (struct sockaddr *)&local_address, sizeof(local_address));
 
-    // set to 0, binds the socket to the first available port
-    local_address.rc_family = AF_BLUETOOTH;
+	// put socket into listening mode
+	printf("socket listening mode status: %d\n", listen(sock, 1));
 
-	bdaddr_t my_bdaddr_any = { { 0, 0, 0, 0, 0, 0 } };
+	// accept one connection
+    	client = accept(sock, (struct sockaddr *)&remote_addr, &opt);
+	printf("accepted connection\n");
+}
 
-    local_address.rc_bdaddr = my_bdaddr_any;
-    local_address.rc_channel = (uint8_t) 0;
-    bind(sock, (struct sockaddr *)&local_address, sizeof(local_address));
+int rfcomm_receive(struct sockaddr_rc& local_address,
+	struct sockaddr_rc& remote_addr,
+	bdaddr_t my_bdaddr_any,
+	char* buf,
+	socklen_t opt,
+	int& client,
+	int& sock)
+{
+	int status = 0;
+	printf("receiving...\n");
 
-    // put socket into listening mode
-    listen(sock, 1);
-
-    // accept one connection
-    client = accept(sock, (struct sockaddr *)&remote_addr, &opt);
-
+    
     ba2str( &remote_addr.rc_bdaddr, buf );
-    fprintf(stderr, "accepted connection from %s\n", buf);
-    memset(buf, 0, sizeof(buf));
+    memset(buf, 0, strlen(buf) + 1);
 
     // read data from the client
-    bytes_read = read(client, buf, sizeof(buf));
-    if( bytes_read > 0 ) {
-		msgs.push_back(std::string(buf));
-        printf("received [%s]\n", buf);
-    }
+    status = read(client, buf, sizeof(buf));
+    if( status > 0 ) {
+        printf("received \"%s\".\n", buf);
+	}
 
-    // close connection
-    close(client);
-    return 0;
+	// status <= 0: error
+	// status >0: return size of received string
+    return status;
 }
