@@ -4,7 +4,7 @@ SET(DRIVE_SRCS
     main.cpp)
 
 #include_directories(${CMAKE_SOURCE_DIR}/../RTIMULib)
-#include_directories("/home/ubuntu/code/ENGR499/IMU/RTIMULib")  
+
 include(${CMAKE_SOURCE_DIR}/../RTIMULib/CMakeLists.txt)
 
 ADD_EXECUTABLE(IMUProgram ${DRIVE_SRCS})
