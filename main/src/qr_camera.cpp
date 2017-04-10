@@ -113,7 +113,8 @@ void QRCamera::decodeFrame(cv::Mat frame) {
             current = localtime(&now);
 
             // do something useful with results
-            std::cout    << "CATHY: [" << current->tm_hour << ":" << current->tm_min << ":" << std::setw(2) << std::setfill('0') << current->tm_sec << "] " << counter << " "
+	    // Brian: I removed the setfill
+            std::cout    << "CATHY: [" << current->tm_hour << ":" << current->tm_min << ":" << std::setw(2) << current->tm_sec << "] " << counter << " "
                     << "decoded " << symbol->get_type_name()
                     << " symbol \"" << symbol->get_data() << '"' << std::endl;
 
