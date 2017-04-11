@@ -5,6 +5,7 @@
 #include "qr_camera.h"
 #include "shape_camera.h"
 #include "imu.h"
+#include "fansController.h"
 
 #include <iostream>
 #include <thread>
@@ -45,6 +46,11 @@ void RunIMU()
     IMUExecution();
 }
 
+void RunFans()
+{
+    FanExecution();
+}
+
 int main()
 {
     // Global camera object referenced by camera threads
@@ -63,10 +69,14 @@ int main()
 
     // Start the IMU thread
     std::thread imuThread(RunIMU);
+
+    // Start the fan thread
+    std::thread fanThread(RunFans);
     
     qrCameraThread.join();
     shapeCameraThread.join();
     imuThread.join();
+    fanThread.join();
 
     delete camera;
     

@@ -22,11 +22,10 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 #  )
 
 # Way to implicitly find sources
-file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/*.c)
 
 add_executable(run ${SOURCES})
 
 target_link_libraries(run ${OpenCV_LIBS} ${ZBAR_LIBRARIES} RTIMULib)
-#target_link_libraries(run ${OpenCV_LIBS} ${ZBAR_LIBRARIES} ${RTIMU_LIBS})
 
 #INSTALL(TARGETS run DESTINATION bin)
