@@ -37,40 +37,75 @@ ENDIF(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 ########################################################################
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.9)
 PROJECT(RTIMULib CXX)
-ENABLE_TESTING()
+#ENABLE_TESTING()
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+message("CMAKE_CURRENT_SOURCE_DIR is ${CMAKE_CURRENT_SOURCE_DIR}")
+message("CMAKE_CURRENT_LIST_DIR is ${CMAKE_CURRENT_LIST_DIR}")
 
-INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../RTIMULibVersion.txt)
+#INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+#INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR})
+
+#INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../RTIMULibVersion.txt)
+#INCLUDE(${CMAKE_CURRENT_LIST_DIR}/../RTIMULibVersion.txt)
 
 SET(LIBRTIMU_SRCS
-    RTFusion.cpp
-    RTFusionRTQF.cpp
-    RTMath.cpp
-    RTFusionKalman4.cpp
-    RTIMUAccelCal.cpp
-    RTIMUHal.cpp
-    RTIMUMagCal.cpp
-    RTIMUSettings.cpp
-    IMUDrivers/RTIMU.cpp
-    IMUDrivers/RTIMUGD20M303DLHC.cpp
-    IMUDrivers/RTIMUGD20HM303DLHC.cpp
-    IMUDrivers/RTIMUGD20HM303D.cpp
-    IMUDrivers/RTIMULSM9DS0.cpp
-    IMUDrivers/RTIMULSM9DS1.cpp
-    IMUDrivers/RTIMUMPU9150.cpp
-    IMUDrivers/RTIMUMPU9250.cpp
-    IMUDrivers/RTIMUBMX055.cpp
-    IMUDrivers/RTIMUBNO055.cpp
-    IMUDrivers/RTIMUNull.cpp
-    IMUDrivers/RTPressure.cpp
-    IMUDrivers/RTPressureBMP180.cpp
-    IMUDrivers/RTPressureLPS25H.cpp
-    IMUDrivers/RTPressureMS5611.cpp
-    IMUDrivers/RTPressureMS5637.cpp
-    IMUDrivers/RTHumidity.cpp
-    IMUDrivers/RTHumidityHTS221.cpp
-    IMUDrivers/RTHumidityHTU21D.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/RTFusion.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/RTFusion.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/RTFusionRTQF.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/RTMath.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/RTFusionKalman4.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/RTIMUAccelCal.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/RTIMUHal.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/RTIMUMagCal.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/RTIMUSettings.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMU.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMUGD20M303DLHC.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMUGD20HM303DLHC.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMUGD20HM303D.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMULSM9DS0.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMULSM9DS1.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMUMPU9150.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMUMPU9250.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMUBMX055.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMUBNO055.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTIMUNull.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTPressure.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTPressureBMP180.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTPressureLPS25H.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTPressureMS5611.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTPressureMS5637.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTHumidity.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTHumidityHTS221.cpp
+    /home/ubuntu/code/ENGR499/IMU/RTIMULib/IMUDrivers/RTHumidityHTU21D.cpp
+
+    #RTFusion.cpp
+    #RTFusion.cpp
+    #RTFusionRTQF.cpp
+    #RTMath.cpp
+    #RTFusionKalman4.cpp
+    #RTIMUAccelCal.cpp
+    #RTIMUHal.cpp
+    #RTIMUMagCal.cpp
+    #RTIMUSettings.cpp
+    #IMUDrivers/RTIMU.cpp
+    #IMUDrivers/RTIMUGD20M303DLHC.cpp
+    #IMUDrivers/RTIMUGD20HM303DLHC.cpp
+    #IMUDrivers/RTIMUGD20HM303D.cpp
+    #IMUDrivers/RTIMULSM9DS0.cpp
+    #IMUDrivers/RTIMULSM9DS1.cpp
+    #IMUDrivers/RTIMUMPU9150.cpp
+    #IMUDrivers/RTIMUMPU9250.cpp
+    #IMUDrivers/RTIMUBMX055.cpp
+    #IMUDrivers/RTIMUBNO055.cpp
+    #IMUDrivers/RTIMUNull.cpp
+    #IMUDrivers/RTPressure.cpp
+    #IMUDrivers/RTPressureBMP180.cpp
+    #IMUDrivers/RTPressureLPS25H.cpp
+    #IMUDrivers/RTPressureMS5611.cpp
+    #IMUDrivers/RTPressureMS5637.cpp
+    #IMUDrivers/RTHumidity.cpp
+    #IMUDrivers/RTHumidityHTS221.cpp
+    #IMUDrivers/RTHumidityHTU21D.cpp
 )
 
 IF(WIN32 AND QT5)

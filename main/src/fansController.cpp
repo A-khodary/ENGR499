@@ -184,7 +184,7 @@ void turnCW(int onPercent) {
     wakeUpFanThread(6);
 } 
 
-int main() {
+void FanExecution() {
     int i;
     bool leftRobot = true;
     bool rightRobot = false;
@@ -261,17 +261,9 @@ int main() {
 	}
 	testing++;
     }
-
 	
     std::cout << "All done!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 	
-
     while(1) {}
-		
-	
-	
-
 }
-
-
 

@@ -55,6 +55,7 @@ int main()
 	float prevvelresid[3] ={0,0,0};
 	float prevaccelresid[3] ={0,0,0};
 	printf("%ld,%ld \n",now,startTimer);
+
 	float initaccelsum[3]={0,0,0};
 	while((now-startTimer)<40000000)
 	{
