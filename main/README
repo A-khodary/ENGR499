@@ -1,0 +1,4 @@
+Installation Requirements:
+QR_Code code:
+sudo apt-get install libzbar-dev
+// libzbar0 may be necessary

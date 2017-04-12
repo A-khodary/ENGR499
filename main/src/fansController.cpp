@@ -14,10 +14,7 @@ extern "C" {
 #include <condition_variable>
 #include <signal.h>
 
-using namespace std;
-
-// 1 = pin 32, 2 = pin 16, 3 = pin 13, 4 = pin 33, 5 = pin 18, 6 = pin 31, 7 = pin 37, 8 = pin 29
-
+// 1 = pin 32, 2 = pin 37, 3 = pin 13, 4 = pin 33, 5 = pin 18, 6 = pin 31, 7 = pin 37, 8 = pin 29
 jetsonTX1GPIONumber GPIOs[8] = {gpio36, gpio37, gpio38, gpio63, gpio184, gpio186, gpio187, gpio219};
 
 std::thread threads[8];
@@ -187,7 +184,7 @@ void turnCW(int onPercent) {
     wakeUpFanThread(6);
 } 
 
-int main() {
+void FanExecution() {
     int i;
     bool leftRobot = true;
     bool rightRobot = false;
@@ -264,17 +261,9 @@ int main() {
 	}
 	testing++;
     }
-
 	
     std::cout << "All done!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 	
-
     while(1) {}
-		
-	
-	
-
 }
-
-
 

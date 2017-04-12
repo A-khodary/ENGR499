@@ -1,4 +1,4 @@
-RTIMULIBPATH  = ../../RTIMULib
+RTIMULIBPATH  = ../RTIMULib
 
 CC    			= gcc
 CXX   			= g++
