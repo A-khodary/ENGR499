@@ -13,6 +13,9 @@ all: $(BIN_DIR)/main
 
 $(BIN_DIR)/main: main.cpp $(OBJS) $(LIB_DIR)/prompt.h $(LIB_DIR)/config.h $(BIN_DIR)/.dirstamp
 	$(CXX) $(FLAGS) $(CTHREAD) $< $(OBJS) -o $@ $(TAILS)
+    
+$(BIN_DIR)/beta: beta.cpp $(OBJS) $(LIB_DIR)/prompt.h $(LIB_DIR)/config.h $(BIN_DIR)/.dirstamp
+	$(CXX) $(FLAGS) $(CTHREAD) $< $(OBJS) -o $@ $(TAILS)
 	
 $(BIN_DIR)/scan.o: $(SRC_DIR)/scan.cpp $(LIB_DIR)/scan.h $(BIN_DIR)/.dirstamp
 	$(CXX) $(FLAGS) -c $< -o $@ $(TAILS)

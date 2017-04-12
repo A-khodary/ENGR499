@@ -17,7 +17,7 @@ void initRfcommReceive(struct sockaddr_rc& local_address,
 int rfcomm_receive(struct sockaddr_rc& local_address,
 	struct sockaddr_rc& remote_addr,
 	bdaddr_t my_bdaddr_any,
-	char* buf,
+	char* buffer,
 	socklen_t opt,
 	int& client,
 	int& sock);

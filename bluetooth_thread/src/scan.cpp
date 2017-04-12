@@ -4,7 +4,7 @@ int bt_scan(inquiry_info **ii, int max_rsp, int &num_rsp, int &sock) {
 	int dev_id;
 
 	// calculate timeout time
-	int len = (int) ((double) max_rsp / 255.0 * 8.0);
+	int len = (int)((double)max_rsp / 255.0 * 8.0);
 
 	// call helper function
 	return bt_scan_helper(ii, max_rsp, num_rsp, dev_id,

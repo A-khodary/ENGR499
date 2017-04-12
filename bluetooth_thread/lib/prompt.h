@@ -25,11 +25,11 @@ int prompt_device(std::string& input, const int& max_num) {
 	std::stringstream ss;
 	int choice = 0;
 
-	while(true) {
+	while (true) {
 		printf("Select a device: ");
 		getline(std::cin, input);
 		ss << input;
-		
+
 		if (ss >> choice && (choice >= 0 && choice <= max_num)) {
 			// success
 			break;

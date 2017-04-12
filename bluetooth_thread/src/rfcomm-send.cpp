@@ -23,9 +23,9 @@ int initRfcommSend(int& sock, char* dest) {
 }
 
 int rfcomm_send(int &sock, char* dest, std::string& msg)
-{	
+{
 	int status = 0;
-	(void) dest;
+	(void)dest;
 	status = write(sock, msg.c_str(), msg.size());
 	//printf("status: %d\n", status);
 
