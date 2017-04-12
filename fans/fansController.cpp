@@ -13,7 +13,7 @@
 
 using namespace std;
 
-// 1 = pin 32, 2 = pin 37, 3 = pin 13, 4 = pin 33, 5 = pin 18, 6 = pin 31, 7 = pin 37, 8 = pin 29
+// 1 = pin 32, 2 = pin 16, 3 = pin 13, 4 = pin 33, 5 = pin 18, 6 = pin 31, 7 = pin 37, 8 = pin 29
 jetsonTX1GPIONumber GPIOs[8] = {gpio36, gpio37, gpio38, gpio63, gpio184, gpio186, gpio187, gpio219};
 
 thread threads[8];
