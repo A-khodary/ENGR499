@@ -2,6 +2,7 @@
 #include "lib/scan.h"
 #include "lib/rfcomm.h"
 #include "lib/prompt.h"
+#include "bluetooth.h"
 
 #include <iostream>
 #include <thread>
@@ -13,11 +14,10 @@
 using namespace std;
 
 void print_menu();
-//int prompt_device(char*, const int&);
 void exchangeMsgs(deque<string>&, deque<string>&);
 
-void runBluetoothSend(deque<string>&, deque<string>&, char*, int&, int);
-void runBluetoothReceive(deque<string>&, deque<string>&, int&);
+void runBluetoothSend(deque<string>&, deque<string>&, char*, Bluetooth&, int);
+void runBluetoothReceive(deque<string>&, deque<string>&, Bluetooth&);
 
 mutex mtx;
 condition_variable bt_send, bt_send2, bt_receive, main_cv;
@@ -34,15 +34,7 @@ int main(int argc, char **argv)
 
 	// check your own address
 	// do corresponding init work
-
-	strcpy(dest, "00:04:4B:65:BB:42");
-
-	// sockets for sending and recieving thread
-	int send_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-	int send_sock2 = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-	int receive_sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-
-	printf("Device to send msgs to: %s\n", dest);
+	Bluetooth bluetooth(deviceBtAddrQ);
 
 	deque<string> send_msgs;
 	deque<string> received_msgs;
@@ -51,7 +43,7 @@ int main(int argc, char **argv)
 	//cout << "thead" << endl;
 	thread bt_sendThread(runBluetoothSend, std::ref(send_msgs), std::ref(bufferQ), dest, std::ref(send_sock));
 	thread bt_sendThread2(runBluetoothSend, std::ref(send_msgs), std::ref(bufferQ), dest, std::ref(send_sock2));
-	thread bt_receiveThread(runBluetoothReceive, std::ref(received_msgs), std::ref(bufferQ), std::ref(receive_sock));
+	thread bt_receiveThread(runBluetoothReceive, std::ref(received_msgs), std::ref(bufferQ), std::ref(bluetooth));
 
 	unique_lock<mutex> lck(mtx);
 	string temp;
@@ -127,7 +119,7 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 	//close(sock);
 }
 
-void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) {
+void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, Bluetooth& bluetooth) {
 	unique_lock<mutex> lck(mtx);
 	lck.unlock();
 
