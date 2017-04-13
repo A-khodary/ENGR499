@@ -19,6 +19,8 @@ int initRfcommSend(int& sock, char* dest) {
 		//return 1;
 	}
 
+	// If the connection or binding succeeds, zero is returned.
+	// On error, -1 is returned, and errno is set appropriately.
 	return status;
 }
 

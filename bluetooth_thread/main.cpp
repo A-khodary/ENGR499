@@ -2,6 +2,7 @@
 #include "lib/scan.h"
 #include "lib/rfcomm.h"
 #include "lib/prompt.h"
+#include "bluetooth.h"
 
 #include <iostream>
 #include <thread>
