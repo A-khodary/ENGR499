@@ -171,7 +171,5 @@ void Bluetooth::setMyAddress(int myAddr) {
 }
 
 void Bluetooth::setMyAddress(const string& address) {
-	int index = find(address);
-	if (index != -1)
-		myAddr_ = index;
+	setMyAddress(find(address));
 }

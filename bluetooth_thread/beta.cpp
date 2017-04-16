@@ -16,7 +16,7 @@ using namespace std;
 void print_menu();
 void exchangeMsgs(deque<string>&, deque<string>&);
 
-void runBluetoothSend(deque<string>&, char*, Bluetooth&, int);
+void runBluetoothSend(deque<string>&, string, Bluetooth&, int);
 void runBluetoothReceive(deque<string>&, Bluetooth&, int);
 
 mutex mtx;
@@ -24,8 +24,12 @@ condition_variable bt_send, bt_send2, main_cv;
 
 int main(int argc, char **argv)
 {
-	inquiry_info *ii = NULL;
-	char* dest = new char[BT_ADDR_SIZE];
+
+	if (argc < 1) {
+		cerr << "Error, correct format: ./<executable name> $(./getMyBtAddr.sh)" << endl;
+	}
+	string myAddr(argv[1]);
+	cout << "My addresss is " << myAddr << endl;
 
 	deque<string> deviceBtAddrQ;
 	deviceBtAddrQ.push_back("00:04:4B:66:9F:3A");
@@ -35,21 +39,23 @@ int main(int argc, char **argv)
 	// check your own address
 	// do corresponding init work
 	Bluetooth bluetooth(deviceBtAddrQ);
+	bluetooth.setMyAddress(myAddr);
+
+	cout << "My address index is " << bluetooth.getMyAddress() << endl;
 
 	deque<string> send_msgs;
 	deque<string> received_msgs;
 	deque<string> bufferQ;
 
-	//cout << "thead" << endl;
-	thread bt_sendThread(runBluetoothSend, ref(send_msgs), dest,
-		ref(bluetooth), 1);
-	thread bt_sendThread2(runBluetoothSend, ref(send_msgs), dest,
-		ref(bluetooth), 2);
-
-	thread bt_receiveThread(runBluetoothReceive, ref(received_msgs),
-		ref(bluetooth), 1);
-	thread bt_receiveThread2(runBluetoothReceive, ref(received_msgs),
-		ref(bluetooth), 2);
+	vector<thread> sendThreads, receiveThreads;
+	for (int i = 0, j = 0; (unsigned)i < deviceBtAddrQ.size(); i++) {
+		if (i != bluetooth.getMyAddress()) {
+			sendThreads.push_back(thread(runBluetoothSend, ref(send_msgs), deviceBtAddrQ[i],
+				ref(bluetooth), j));
+			receiveThreads.push_back(thread(runBluetoothReceive, ref(received_msgs),
+				ref(bluetooth), j++));
+		}
+	}
 
 	unique_lock<mutex> lck(mtx);
 	string temp;
@@ -70,17 +76,18 @@ int main(int argc, char **argv)
 		//main_cv.wait(lck);
 	}
 
-	bt_sendThread.join();
-	bt_receiveThread.join();
-	bt_sendThread2.join();
-	bt_receiveThread2.join();
 
-	delete ii;
-	delete dest;
+	for (int i = 0; (unsigned)i < sendThreads.size(); i++) {
+		sendThreads[i].join();
+	}
+	for (int i = 0; (unsigned)i < receiveThreads.size(); i++) {
+		receiveThreads[i].join();
+	}
+
 	return 0;
 }
 
-void runBluetoothSend(deque<string>& msgs, char* dest,
+void runBluetoothSend(deque<string>& msgs, string dest,
 	Bluetooth& bluetooth, int threadNum)
 {
 	condition_variable &bt_sendRef = threadNum == 1 ? bt_send : bt_send2;
@@ -88,7 +95,7 @@ void runBluetoothSend(deque<string>& msgs, char* dest,
 	lck.unlock();
 	cout << "Thread: send begin" << endl;
 
-	int index = bluetooth.find(string(dest));
+	int index = bluetooth.find(dest);
 	if (index > bluetooth.getMyAddress()) {
 		// connect to lower index
 		bt_sendRef.wait(lck);
