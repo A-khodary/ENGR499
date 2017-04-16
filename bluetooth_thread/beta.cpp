@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 	deque<string> bufferQ;
 
 	vector<thread> sendThreads, receiveThreads;
-	for (int i = 0, j = 0; (unsigned)i < deviceBtAddrQ.size(); i++) {
+	for (int i = 0, j = 1; (unsigned)i < deviceBtAddrQ.size(); i++) {
 		if (i != bluetooth.getMyAddress()) {
 			sendThreads.push_back(thread(runBluetoothSend, ref(send_msgs), deviceBtAddrQ[i],
 				ref(bluetooth), j));
