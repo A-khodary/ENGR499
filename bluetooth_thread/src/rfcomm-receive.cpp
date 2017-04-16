@@ -1,12 +1,16 @@
 #include "../lib/rfcomm.h"
+#include <string>
 
-void initRfcommReceive(struct sockaddr_rc& local_address,
+using std::string;
+
+int initRfcommReceive(struct sockaddr_rc& local_address,
 	struct sockaddr_rc& remote_addr,
-	bdaddr_t my_bdaddr_any,
-	socklen_t opt,
 	int& client,
 	int& sock)
 {
+
+	bdaddr_t my_bdaddr_any = { { 0, 0, 0, 0, 0, 0 } };
+	socklen_t option = sizeof(remote_addr);
 
 	local_address.rc_family = AF_BLUETOOTH;
 	local_address.rc_bdaddr = my_bdaddr_any;
@@ -19,29 +23,32 @@ void initRfcommReceive(struct sockaddr_rc& local_address,
 	printf("socket listening mode status: %d\n", listen(sock, 1));
 
 	// accept one connection
-	client = accept(sock, (struct sockaddr *)&remote_addr, &opt);
+	client = accept(sock, (struct sockaddr *)&remote_addr, &option);
 	printf("accepted connection\n");
+
+	// client > 0: success
+	// client < 0: error
+	return client;
 }
 
 int rfcomm_receive(struct sockaddr_rc& local_address,
 	struct sockaddr_rc& remote_addr,
-	bdaddr_t my_bdaddr_any,
 	char* buffer,
-	socklen_t opt,
 	int& client,
-	int& sock)
+	string& msg)
 {
 	int status = 0;
 	printf("receiving...\n");
 
-
 	ba2str(&remote_addr.rc_bdaddr, buffer);
+	fprintf(stderr, "accepted connection from %s\n", buffer);
 	memset(buffer, 0, strlen(buffer) + 1);
 
 	// read data from the client
 	status = read(client, buffer, sizeof(buffer));
 	if (status > 0) {
 		printf("received \"%s\".\n", buffer);
+		msg = buffer;
 	}
 
 	// status <= 0: error

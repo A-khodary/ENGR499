@@ -16,11 +16,11 @@ using namespace std;
 void print_menu();
 void exchangeMsgs(deque<string>&, deque<string>&);
 
-void runBluetoothSend(deque<string>&, deque<string>&, char*, Bluetooth&, int);
-void runBluetoothReceive(deque<string>&, deque<string>&, Bluetooth&);
+void runBluetoothSend(deque<string>&, char*, Bluetooth&, int);
+void runBluetoothReceive(deque<string>&, Bluetooth&, int);
 
 mutex mtx;
-condition_variable bt_send, bt_send2, bt_receive, main_cv;
+condition_variable bt_send, bt_send2, main_cv;
 
 int main(int argc, char **argv)
 {
@@ -41,9 +41,15 @@ int main(int argc, char **argv)
 	deque<string> bufferQ;
 
 	//cout << "thead" << endl;
-	thread bt_sendThread(runBluetoothSend, std::ref(send_msgs), std::ref(bufferQ), dest, std::ref(send_sock));
-	thread bt_sendThread2(runBluetoothSend, std::ref(send_msgs), std::ref(bufferQ), dest, std::ref(send_sock2));
-	thread bt_receiveThread(runBluetoothReceive, std::ref(received_msgs), std::ref(bufferQ), std::ref(bluetooth));
+	thread bt_sendThread(runBluetoothSend, ref(send_msgs), dest,
+		ref(bluetooth), 1);
+	thread bt_sendThread2(runBluetoothSend, ref(send_msgs), dest,
+		ref(bluetooth), 2);
+
+	thread bt_receiveThread(runBluetoothReceive, ref(received_msgs),
+		ref(bluetooth), 1);
+	thread bt_receiveThread2(runBluetoothReceive, ref(received_msgs),
+		ref(bluetooth), 2);
 
 	unique_lock<mutex> lck(mtx);
 	string temp;
@@ -54,7 +60,7 @@ int main(int argc, char **argv)
 		cout << "try to send \"" << temp << "\"" << endl;
 
 		printf("Main: wake up sending thread\n");
-		
+
 		lck.lock();
 		send_msgs.push_back(temp);
 		// wake up sending thread
@@ -66,23 +72,38 @@ int main(int argc, char **argv)
 
 	bt_sendThread.join();
 	bt_receiveThread.join();
-
-	// close the 2 sockets
-	close(send_sock);
-	close(receive_sock);
+	bt_sendThread2.join();
+	bt_receiveThread2.join();
 
 	delete ii;
 	delete dest;
 	return 0;
 }
 
-void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, int& sock, int destDeviceID) {
-	condition_variable &bt_sendRef = destDeviceID == 1 ? bt_send : bt_send2;
+void runBluetoothSend(deque<string>& msgs, char* dest,
+	Bluetooth& bluetooth, int threadNum)
+{
+	condition_variable &bt_sendRef = threadNum == 1 ? bt_send : bt_send2;
 	unique_lock<mutex> lck(mtx);
 	lck.unlock();
 	cout << "Thread: send begin" << endl;
-	//int index = 0;
-	int status = initRfcommSend(sock, dest);
+
+	int index = bluetooth.find(string(dest));
+	if (index > bluetooth.getMyAddress()) {
+		// connect to lower index
+		bt_sendRef.wait(lck);
+	}
+	cout << boolalpha << "connect to " << dest << "....\nSuccessful? "
+		<< bluetooth.connect(index) << endl;
+
+
+	string msg;
+	msg.push_back('0' + bluetooth.getMyAddress());
+	if (bluetooth.send(index, msg) <= 0) {
+		// notify the device
+		cerr << "Failed: unable to send \"" << msg << "\""
+			<< endl;
+	}
 
 	while (true) {
 		printf("Thread: sending\n");
@@ -91,71 +112,95 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 		for (int i = 0; (unsigned)i < msgs.size(); i++) {
 			//it = msgs.begin();
 
-			status = rfcomm_send(sock, dest, msgs[0]);
-			if (status <= 0) {
-				printf("Failed: unable to send data\n");
+			//status = rfcomm_send(sock, dest, msgs[0]);
+			if (bluetooth.send(index, msgs[i]) <= 0) {
+				cout << "Failed: unable to send \"" << msgs[i] << "\""
+					<< endl;
 
 				// break the sending loop
 				break;
 			}
-			cout << "Msg sent: \"" << msgs[0] << "\"" << endl;
+			cout << "Msg sent: \"" << msgs[i] << "\"" << endl;
 		}
 		msgs.clear();
-		lck.unlock();
+		/*lck.unlock();
 
-		
-		//main_cv.notify_one();
-		lck.lock();		
+		lck.lock();*/
 		if (msgs.empty()) {
 			cout << "Thread: acquire sending lock" << endl;
 			bt_sendRef.wait(lck);
-			//bt_receive.notify_one();
-			//bt_send.wait(sendLock);
 		}
 		lck.unlock();
-
 	}
-
-	//close(sock);
 }
 
-void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, Bluetooth& bluetooth) {
+void runBluetoothReceive(deque<string>& msgs, Bluetooth& bluetooth,
+	int threadNum)
+{
 	unique_lock<mutex> lck(mtx);
 	lck.unlock();
-
 	cout << "Thread: receive begin" << endl;
 
-	// initialize variables
-	struct sockaddr_rc local_address = { 0 };
-	struct sockaddr_rc remote_addr = { 0 };
-	int client;
+	if (bluetooth.initListener(threadNum) == false) {
+		cerr << "invalid threadNum = " << threadNum << endl;
+		return;
+	}
 
-	socklen_t opt = sizeof(remote_addr);
-	bdaddr_t my_bdaddr_any = { { 0, 0, 0, 0, 0, 0 } };
+	char buffer[1024];
+	memset(buffer, '\0', 1024);
 
-	char buffer[1024] = { 0 };
+	string msg;
+	while (bluetooth.listen(threadNum, msg, buffer) <= 0) {
+		printf("Failed: unable to receive data\n");
+	}
 
-	// call function to initialize the receiving thread
-	initRfcommReceive(local_address, remote_addr,
-		my_bdaddr_any, opt, client, sock);
+	int confirmedDeviceIndex = -1;
+	try {
+		confirmedDeviceIndex = stoi(msg);
+	}
+	catch (invalid_argument ex) {
+		cerr << "confirmation message \"" << msg << "\" is invalid" << endl;
+		return;
+	}
+	catch (out_of_range ex) {
+		cerr << "confirmation message too large" << endl;
+		return;
+	}
 
+	if (confirmedDeviceIndex < 0 || confirmedDeviceIndex >= 3)
+		return;
+	condition_variable *bt_sendRef = NULL;
+	confirmedDeviceIndex = bluetooth.getMyAddress() - confirmedDeviceIndex;
+	if (confirmedDeviceIndex > 0) {
+		// myAddr = 3, index == 1: myAddr - index = 3 - 1 = 2, 2 % 2 = 0 -> bt_send
+		// myAddr = 3, index == 2: myAddr - index = 3 - 2 = 1, 1 % 2 = 1 -> bt_send2
+		// myAddr = 2, index == 1: myAddr - index = 2 - 1 = 1, 1 % 2 = 1 -> bt_send2
+		if (confirmedDeviceIndex % 2 == 1) {
+			bt_sendRef = &bt_send2;
+		}
+		else {
+			bt_sendRef = &bt_send;
+		}
+	}
+	if (bt_sendRef != NULL) {
+		bt_sendRef->notify_one();
+	}
+
+	msg.clear();
 	while (true) {
 		printf("Thread: listening: \n");
-		if (rfcomm_receive(local_address, remote_addr,
-			my_bdaddr_any, buffer, opt, client
-			, sock) <= 0) {
+		if (bluetooth.listen(threadNum, msg, buffer) <= 0) {
 			printf("Failed: unable to receive data\n");
 		}
 		else {
 			cout << buffer << endl;
 			lck.lock();
-			msgs.push_back(string(buffer));
+			msgs.push_back(msg);
 			lck.unlock();
 		}
+		// clear the string
+		msg.clear();
 	}
-
-	//close(client);
-	//close(sock);
 }
 
 

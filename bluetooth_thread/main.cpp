@@ -2,7 +2,6 @@
 #include "lib/scan.h"
 #include "lib/rfcomm.h"
 #include "lib/prompt.h"
-#include "bluetooth.h"
 
 #include <iostream>
 #include <thread>
@@ -89,14 +88,14 @@ void runBluetoothSend(deque<string>& msgs, deque<string>& otherQ, char* dest, in
 		for (int i = 0; (unsigned)i < msgs.size(); i++) {
 			//it = msgs.begin();
 
-			status = rfcomm_send(sock, dest, msgs[0]);
+			status = rfcomm_send(sock, msgs[i]);
 			if (status <= 0) {
 				printf("Failed: unable to send data\n");
 
 				// break the sending loop
 				break;
 			}
-			cout << "Msg sent: \"" << msgs[0] << "\"" << endl;
+			cout << "Msg sent: \"" << msgs[i] << "\"" << endl;
 		}
 		msgs.clear();
 		lck.unlock();
@@ -126,30 +125,28 @@ void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) 
 	// initialize variables
 	struct sockaddr_rc local_address = { 0 };
 	struct sockaddr_rc remote_addr = { 0 };
-	int client;
-
-	socklen_t opt = sizeof(remote_addr);
-	bdaddr_t my_bdaddr_any = { { 0, 0, 0, 0, 0, 0 } };
+	int client = 0;
 
 	char buffer[1024] = { 0 };
 
 	// call function to initialize the receiving thread
 	initRfcommReceive(local_address, remote_addr,
-		my_bdaddr_any, opt, client, sock);
+		client, sock);
 
+	string msg;
 	while (true) {
 		printf("Thread: listening: \n");
-		if (rfcomm_receive(local_address, remote_addr,
-			my_bdaddr_any, buffer, opt, client
-			, sock) <= 0) {
+		if (rfcomm_receive(local_address, remote_addr, buffer,
+			client, msg) <= 0) {
 			printf("Failed: unable to receive data\n");
 		}
 		else {
 			cout << buffer << endl;
 			lck.lock();
-			msgs.push_back(string(buffer));
+			msgs.push_back(msg);
 			lck.unlock();
 		}
+		msg.clear();
 	}
 
 	//close(client);
