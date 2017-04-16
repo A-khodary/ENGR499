@@ -11,7 +11,9 @@ rfkill unblock bluetooth #to start bluetooth
 ```
 
 ### For permission error  
-run `$ chmod 755 getMyBtAddr.sh`  
+run ```Shell
+$ chmod 755 getMyBtAddr.sh #grant read, write, and execute permission 
+```  
 
 ## Compile:  
 ### 1. To compile
