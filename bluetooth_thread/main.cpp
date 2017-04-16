@@ -128,9 +128,13 @@ void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) 
 	int client = 0;
 
 	char buffer[1024] = { 0 };
+	char buffer2[1024] = { 0 };
 	ba2str(&local_address.rc_bdaddr, buffer);
 	cout << "LOCAL BEFORE: " << buffer << endl;
+	ba2str(&remote_addr.rc_bdaddr, buffer2);
+	cout << "REMOTE BEFORE: " << buffer2 << endl;
 	memset(buffer, 0, 1024);
+	memset(buffer2, 0, 1024);
 
 	// call function to initialize the receiving thread
 	initRfcommReceive(local_address, remote_addr,
@@ -138,7 +142,10 @@ void runBluetoothReceive(deque<string>& msgs, deque<string>& otherQ, int& sock) 
 
 	ba2str(&local_address.rc_bdaddr, buffer);
 	cout << "LOCAL AFTER: " << buffer << endl;
+	ba2str(&remote_addr.rc_bdaddr, buffer2);
+	cout << "REMOTE BEFORE: " << buffer2 << endl;
 	memset(buffer, 0, 1024);
+	memset(buffer2, 0, 1024);
 
 	string msg;
 	while (true) {
