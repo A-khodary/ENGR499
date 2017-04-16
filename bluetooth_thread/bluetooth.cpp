@@ -158,7 +158,7 @@ int Bluetooth::find(const std::string& address) const {
 	return index;
 }
 
-int Bluetooth::getMyAddress() {
+int Bluetooth::getMyAddress() const {
 	return myAddr_;
 }
 

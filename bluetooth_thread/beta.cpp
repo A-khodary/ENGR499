@@ -146,7 +146,7 @@ void runBluetoothReceive(deque<string>& msgs, Bluetooth& bluetooth,
 {
 	unique_lock<mutex> lck(mtx);
 	lck.unlock();
-	cout << "Thread: receive begin" << endl;
+	cout << "pack_number" << threadNum << ": receive begin" << endl;
 
 	if (bluetooth.initListener(threadNum) == false) {
 		cerr << "invalid threadNum = " << threadNum << endl;
