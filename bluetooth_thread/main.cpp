@@ -27,6 +27,10 @@ int main(int argc, char **argv)
 	if (argc > 1) {
 		cout << "\"" << argv[1] << "\"" << endl;
 	}
+	string temp1;
+	cout << "get args: ";
+	cin << temp1 << endl;
+
 	inquiry_info *ii = NULL;
 	char* dest = new char[BT_ADDR_SIZE];
 	//strcpy(dest, "00:04:4B:66:9F:3A");
