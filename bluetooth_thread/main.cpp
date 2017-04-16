@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 	}
 	string temp1;
 	cout << "get args: ";
-	cin << temp1 << endl;
+	cin >> temp1;
 
 	inquiry_info *ii = NULL;
 	char* dest = new char[BT_ADDR_SIZE];
