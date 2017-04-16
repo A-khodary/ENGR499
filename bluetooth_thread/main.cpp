@@ -24,12 +24,14 @@ condition_variable bt_send, bt_receive, main_cv;
 
 int main(int argc, char **argv)
 {
-	if (argc > 1) {
+	/*if (argc > 1) {
 		cout << "\"" << argv[1] << "\"" << endl;
+	}*/
+	if (argc < 1) {
+		cerr << "Error, correct format: ./<executable name> $(./getMyBtAddr.sh)" << endl;
 	}
-	string temp1;
-	cout << "get args: ";
-	cin >> temp1;
+	string myAddr(argv[1]);
+	cout << "My addresss is " << myAddr << endl;
 
 	inquiry_info *ii = NULL;
 	char* dest = new char[BT_ADDR_SIZE];
