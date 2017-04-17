@@ -11,8 +11,10 @@
 using namespace std;
 
 void
-IMUExecution(struct imuInfo &data, mutex &dataLock)
+IMUExecution(struct imuInfo &data, mutex &imuDataMutex, condition_variable &writecv)
 {
+  std::unique_lock<mutex> dataLock(imuDataMutex);
+  dataLock.unlock();
   //Creates .ini File
   RTIMUSettings *settings = new RTIMUSettings("RTIMULib");
   //Detects IMU type and creates connection
@@ -113,13 +115,17 @@ IMUExecution(struct imuInfo &data, mutex &dataLock)
 	      RTVector3 gyro = imu->getGyro();
 	      RTVector3 compass = imu->getCompass();
 	      dataFile << accel.data(0) << "," << accel.data(1)<< "," << accel.data(2) << ","  << modifiedAccel[0] <<"," << modifiedAccel[1] << "," << modifiedAccel[2]<< "," << velresid[0] << "," << velresid[1] << "," << velresid[2] << "," << posresid[0] << "," << posresid[1] << "," << posresid[2] << "," << imuData.fusionPose.x()*RTMATH_RAD_TO_DEGREE << "," << imuData.fusionPose.y()*RTMATH_RAD_TO_DEGREE << "," << imuData.fusionPose.z()*RTMATH_RAD_TO_DEGREE << "," << now << "," << prevnow<< "," << deltaTime << endl;
+
 	      dataLock.lock();
 	      data.x = posresid[0];
 	      data.y = posresid[1];
-	      data.z = posresid[2];
+	      data.velx = velresid[0];
+	      data.vely = velresid[1];
 	      data.roll = imuData.fusionPose.x()*RTMATH_RAD_TO_DEGREE;
 	      data.pitch = imuData.fusionPose.x()*RTMATH_RAD_TO_DEGREE;
 	      data.yaw = imuData.fusionPose.x()*RTMATH_RAD_TO_DEGREE;
+		  writecv.notify_one();
+		  writecv.wait(dataLock);
 	      dataLock.unlock();
 	      //fflush(stdout);
 	    }

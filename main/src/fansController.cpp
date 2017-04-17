@@ -171,9 +171,8 @@ void FanExecution() {
 	*/
 
     usleep(1000000);
-
-	
 	
     std::cout << "All done!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+
 }
 

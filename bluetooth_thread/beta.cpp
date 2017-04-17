@@ -32,8 +32,8 @@ int main(int argc, char **argv)
 	cout << "My addresss is " << myAddr << endl;
 
 	deque<string> deviceBtAddrQ;
-	deviceBtAddrQ.push_back("00:04:4B:66:9F:3A");
-	deviceBtAddrQ.push_back("00:04:4B:65:BB:42");
+	deviceBtAddrQ.push_back("00:04:4B:65:C3:75");
+	deviceBtAddrQ.push_back("00:04:4B:66:32:D9");
 	//deviceBtAddrQ.push_back("00:00:00:00:00:00");
 
 	// check your own address
