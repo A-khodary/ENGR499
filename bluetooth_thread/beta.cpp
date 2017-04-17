@@ -61,9 +61,10 @@ int main(int argc, char **argv)
 	string temp;
 	while (true) {
 		lck.unlock();
-		cout << "> Say something: ";
+		cout << "> Say something <1 digit index num><msg>: ";
 		cin >> temp;
-		cout << "try to send \"" << temp << "\"" << endl;
+		int index = temp[0] - '0';
+		cout << "sending \"" << temp << "\" to #" << index << endl;
 
 		printf("Main: wake up sending thread\n");
 
@@ -71,6 +72,7 @@ int main(int argc, char **argv)
 		send_msgs.push_back(temp);
 		// wake up sending thread
 		bt_send.notify_one();
+		bt_send2.notify_one();
 		cout << "waked up!!" << endl;
 		temp.clear();
 		//main_cv.wait(lck);
@@ -108,42 +110,50 @@ void runBluetoothSend(deque<string>& msgs, string dest,
 	msg.push_back('0' + bluetooth.getMyAddress());
 	if (bluetooth.send(index, msg) <= 0) {
 		// notify the device
-		cerr << "Failed: unable to send \"" << msg << "\""
+		cerr << "Failed: unable to send confirmation msg: \"" << msg << "\""
 			<< endl;
 	}
 
 	while (true) {
-		printf("Thread: sending\n");
+		//printf("Thread: sending\n");
 		lck.lock();
-		printf("msgQ size = %d\n", (int)msgs.size());
 		int size = msgs.size();
+		printf("msgQ size = %d\n", size);
 		for (int i = 0; i < size; i++) {
-			int destIndex = msgs[0][0] - '0';
+			int destIndex = -1;
+			try {
+				// get the first letter of the msg, which is the destnation index
+				destIndex = msgs.at(0).at(0) - '0';
+			}
+			catch (out_of_range ex) {
+				cerr << "Error: \"" << msgs[0] << "\" has invalid size = " << msgs[0].size() << endl;
+				break;
+			}
+
 			if (bluetooth.getCurrTheradNum(destIndex) == threadNum) {
 				// should send in this thread
-				if (bluetooth.send(index, msgs[i]) <= 0) {
-					cout << "Failed: unable to send \"" << msgs[i] << "\""
+				if (bluetooth.send(index, msgs[0]) <= 0) {
+					cerr << "Failed: unable to send \"" << msgs[i] << "\""
 						<< endl;
 
 					// break the sending loop
 					break;
 				}
 
-				cout << "Msg sent: \"" << msgs[i] << "\"" << endl;
+				cout << "Msg sent: \"" << msgs[0] << "\"" << endl;
 			}
 			else {
 				msgs.push_back(msgs[0]);
 			}
 			msgs.pop_front();
 		}
-		msgs.clear();
-		/*lck.unlock();
 
-		lck.lock();*/
-		if (msgs.empty()) {
-			cout << "Thread: acquire sending lock" << endl;
+		/*if (msgs.empty()) {
+			cout << "Thread bt_send" << threadNum << ": acquire sending lock" << endl;
 			bt_sendRef.wait(lck);
-		}
+		}*/
+		cout << "Thread bt_send" << threadNum << ": acquire sending lock" << endl;
+		bt_sendRef.wait(lck);
 		lck.unlock();
 	}
 }
