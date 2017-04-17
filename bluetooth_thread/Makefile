@@ -12,7 +12,7 @@ CLASS = $(BIN_DIR)/bluetooth.o
 
 all: $(BIN_DIR)/mainBP $(BIN_DIR)/main
 
-$(BIN_DIR)/mainBP: main_backup.cpp $(OBJS) $(LIB_DIR)/prompt.h $(LIB_DIR)/config.h $(BIN_DIR)/.dirstamp
+$(BIN_DIR)/mainBP: mainBP.cpp $(OBJS) $(LIB_DIR)/prompt.h $(LIB_DIR)/config.h $(BIN_DIR)/.dirstamp
 	$(CXX) $(FLAGS) $(CTHREAD) $< $(OBJS) -o $@ $(TAILS)
     
 $(BIN_DIR)/main: main.cpp $(OBJS) $(CLASS) $(LIB_DIR)/prompt.h $(LIB_DIR)/config.h $(BIN_DIR)/.dirstamp
