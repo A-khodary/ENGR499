@@ -34,12 +34,14 @@ public:
 	int listen(int, std::string&, char*);
 	int listen(int, std::string&);
 
-	std::string& operator[](int);
-	const std::string& operator[](int) const;
-
 	int find(const std::string&) const;
 
-	int getMyAddress();
+	// accessor
+	std::string& operator[](int);
+	const std::string& operator[](int) const;
+	int getMyAddress() const;
+
+	// mutator
 	void setMyAddress(int);
 	void setMyAddress(const std::string&);
 private:
