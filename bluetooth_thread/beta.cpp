@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 	deque<string> deviceBtAddrQ;
 	deviceBtAddrQ.push_back("00:04:4B:66:9F:3A");
 	deviceBtAddrQ.push_back("00:04:4B:65:BB:42");
-	deviceBtAddrQ.push_back("00:00:00:00:00:00");
+	//deviceBtAddrQ.push_back("00:00:00:00:00:00");
 
 	// check your own address
 	// do corresponding init work
