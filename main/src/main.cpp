@@ -11,7 +11,10 @@
 #include <thread>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <condition_variable>
 
+extern void moveForward(int onpercent);
+extern void moveBackward(int onpercent);
 const int cameraDevice = 0;
 
 
@@ -43,9 +46,9 @@ void RunShapeCamera(Camera* camera)
     }
 }
 
-void RunIMU(struct imuInfo &data, std::mutex &imuDataMutex)
+void RunIMU(struct imuInfo &data, std::mutex &imuDataMutex, std::condition_variable &cv)
 {
-    IMUExecution(data, imuDataMutex);
+    IMUExecution(data, imuDataMutex, cv);
 }
 
 void RunFans()
@@ -53,13 +56,43 @@ void RunFans()
     FanExecution();
 }
 
-void ReadData(struct imuInfo &data, std::mutex &imuDataMutex)
+void ReadData(struct imuInfo &data, std::mutex &imuDataMutex, std::condition_variable &cv)
 {
-    while(1){	
-    	imuDataMutex.lock();
-    	printf("Pitch: %lf\r", data.pitch);
-	fflush(stdout);
-    	imuDataMutex.unlock();
+	std::unique_lock<std::mutex> datalock(imuDataMutex);
+	datalock.unlock();
+	float desiredx=0;
+	float desiredy=0;
+	float desiredvx =0;
+	float desiredvy =0;
+	float desiredpitch =0;
+	float kp =5000;
+	float kd=1;
+    while(1){
+		
+    	datalock.lock();
+		cv.wait(datalock);
+		float errorvx = desiredvx - data.velx;
+		float controlvx = kp * errorvx;
+		float errorx = 	desiredx - data.x;
+		float controlx = kp * errorx + kd*controlvx;
+
+		float errorvy = desiredvy - data.vely;
+		float controlvy = kp * errorvy;
+		float errory = 	desiredy - data.y;
+		float controly = kp * errory + kd*controlvy;
+
+		float errorpitch = desiredpitch-data.pitch;
+		float controlpitch = kp*errorpitch + kd*controlpitch;
+		//printf("VelX:%lf,PosX:%lf,VelY%lf,PosY:%lf,Pitch:%lf\n",data.velx,data.x,data.vely,data.y,data.pitch);
+		printf("ControlX:%lf,ControlY:%lf,ControlP:%lf \n",controlx, controly, controlpitch);
+		fflush(stdout);
+		if(controlx<0)
+			moveForward(controlx);
+		else
+			moveBackward(controlx);
+		cv.notify_one();
+    	datalock.unlock();
+		
    }
 }
 
@@ -69,11 +102,13 @@ int main()
     imuInfo imuData;
     imuData.x=0;
     imuData.y=0; 
-    imuData.z=0; 
+    imuData.velx=0;
+    imuData.vely=0; 
     imuData.roll=0; 
     imuData.pitch=0; 
     imuData.yaw=0;
     std::mutex imuDataMutex;
+	std::condition_variable writeDatacv;
     // Global camera object referenced by camera threads
     /*Camera* camera = new Camera();
     if (!camera->OpenVideoCap(cameraDevice))
@@ -89,16 +124,16 @@ int main()
     //std::thread shapeCameraThread(RunShapeCamera, camera);
 
     // Start the IMU thread
-    std::thread imuThread(&RunIMU, std::ref(imuData), std::ref(imuDataMutex));
-    std::thread readDataThread(&ReadData, std::ref(imuData), std::ref(imuDataMutex));
+    std::thread imuThread(&RunIMU, std::ref(imuData), std::ref(imuDataMutex),std::ref(writeDatacv));
+    std::thread readDataThread(&ReadData, std::ref(imuData), std::ref(imuDataMutex), std::ref(writeDatacv));
     // Start the fan thread
-    //std::thread fanThread(RunFans);
+    std::thread fanThread(RunFans);
     
     //qrCameraThread.join();
     //shapeCameraThread.join();
     imuThread.join();
     readDataThread.join();
-    //fanThread.join();
+    fanThread.join();
 
     //delete camera;
     

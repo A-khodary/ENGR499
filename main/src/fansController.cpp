@@ -225,45 +225,7 @@ void FanExecution() {
       turnCCW(onPercent);
       usleep(10000000);
     */
-	
-    //Turn in a circle slowly, until full revolution
-    std::cout << "Start test" << std::endl;
-    int testing = 0;
-    checkRotation();
-    while(testing < 4/*imu says not full rotation?*/) {
-	std::cout << "Rotating!" << std::endl;
-	if(MaxRotationCCW) {
-	    turnCW(onPercent);
-	} else {
-	    turnCCW(onPercent);
-	}
-	testing++;
-    }
-    // move toward wall
-    while(testing < 7/*imu says not near edge*/) {
-	std::cout << "Moving toward edge" << std::endl;
-	moveForward(onPercent);
-	testing++;
-    }
-    // slowly move sideways along wall, turning as each corner is reached to move along new wall
-    while(testing < 11/*imu says not near corner*/) {
-	std::cout << "Moving toward corner" << std::endl;
-	moveRight(onPercent);
-	testing++;
-    }
-    checkRotation();
-    while(testing < 13/*imu says not quarter rotation? */) {
-	std::cout << "Rotating" << std::endl;
-	if(MaxRotationCCW) {
-	    turnCW(onPercent);
-	} else {
-	    turnCCW(onPercent);	
-	}
-	testing++;
-    }
-	
-    std::cout << "All done!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-	
-    while(1) {}
+    //Turn in a circle slowly, until full revolution  
+
 }
 
