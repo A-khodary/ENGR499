@@ -102,8 +102,13 @@ void runBluetoothSend(deque<string>& msgs, string dest,
 		// connect to lower index
 		bt_sendRef.wait(lck);
 	}
-	cout << boolalpha << "connect to " << dest << "....\nSuccessful? "
-		<< bluetooth.connect(index, threadNum) << endl;
+	cout << "connect to " << dest << "....\nSuccessful? ";
+	if (!bluetooth.connect(index, threadNum)) {
+		cout << "false" << endl;
+		return;
+	}
+
+	cout << "true" << endl;
 
 
 	string msg;
