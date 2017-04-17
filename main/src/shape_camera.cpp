@@ -135,9 +135,9 @@ void ShapeCamera::RecognizeShapes(cv::Mat shapeImg)
 
     
     // Detect angle of shape
-    double angle3 = (double) (pos3 - 340) / 340 * 37.5;
-    double angle4 = (double) (pos4 - 340) / 340 * 37.5;
-    double angle5 = (double) (pos5 - 340) / 340 * 37.5;
+    double angle3 = (double) (pos3 - 320) / 320 * 37.5;
+    double angle4 = (double) (pos4 - 320) / 320 * 37.5;
+    double angle5 = (double) (pos5 - 320) / 320 * 37.5;
     
     std::string string3, string4, string5;
     if (pos3 == -1)
