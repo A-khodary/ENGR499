@@ -18,6 +18,13 @@ struct RfcommReceivePackage {
 	RfcommReceivePackage();
 };
 
+struct RfcommSendPackage {
+	int sock;
+	int currThreadNum;
+
+	RfcommSendPackage();
+};
+
 class Bluetooth {
 public:
 	Bluetooth();
@@ -27,14 +34,16 @@ public:
 
 	int send(const std::string&, const std::string&);
 	int send(int, const std::string&);
-	bool connect(const std::string&);
-	bool connect(int);
+	bool connect(const std::string&, int);
+	bool connect(int, int);
 
 	bool initListener(int);
 	int listen(int, std::string&, char*);
 	int listen(int, std::string&);
 
 	int find(const std::string&) const;
+	int getCurrTheradNum(const std::string&) const;
+	int getCurrTheradNum(int) const;
 
 	// accessor
 	std::string& operator[](int);
@@ -42,14 +51,12 @@ public:
 	int getMyAddress() const;
 
 	// mutator
-	void setMyAddress(int);
 	void setMyAddress(const std::string&);
+	void setMyAddress(int);
 private:
-	void setUp();
-
 	int myAddr_;
 	std::deque<std::string> device_addressQ_;
-	int send_sock_, send_sock2_;
+	RfcommSendPackage sendPack_, sendPack2_;
 	RfcommReceivePackage receivePack_, receivePack2_;
 };
 

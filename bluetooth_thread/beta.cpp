@@ -101,7 +101,7 @@ void runBluetoothSend(deque<string>& msgs, string dest,
 		bt_sendRef.wait(lck);
 	}
 	cout << boolalpha << "connect to " << dest << "....\nSuccessful? "
-		<< bluetooth.connect(index) << endl;
+		<< bluetooth.connect(index, threadNum) << endl;
 
 
 	string msg;
@@ -116,18 +116,25 @@ void runBluetoothSend(deque<string>& msgs, string dest,
 		printf("Thread: sending\n");
 		lck.lock();
 		printf("msgQ size = %d\n", (int)msgs.size());
-		for (int i = 0; (unsigned)i < msgs.size(); i++) {
-			//it = msgs.begin();
+		int size = msgs.size();
+		for (int i = 0; i < size; i++) {
+			int destIndex = msgs[0][0] - '0';
+			if (bluetooth.getCurrTheradNum(destIndex) == threadNum) {
+				// should send in this thread
+				if (bluetooth.send(index, msgs[i]) <= 0) {
+					cout << "Failed: unable to send \"" << msgs[i] << "\""
+						<< endl;
 
-			//status = rfcomm_send(sock, dest, msgs[0]);
-			if (bluetooth.send(index, msgs[i]) <= 0) {
-				cout << "Failed: unable to send \"" << msgs[i] << "\""
-					<< endl;
+					// break the sending loop
+					break;
+				}
 
-				// break the sending loop
-				break;
+				cout << "Msg sent: \"" << msgs[i] << "\"" << endl;
 			}
-			cout << "Msg sent: \"" << msgs[i] << "\"" << endl;
+			else {
+				msgs.push_back(msgs[0]);
+			}
+			msgs.pop_front();
 		}
 		msgs.clear();
 		/*lck.unlock();

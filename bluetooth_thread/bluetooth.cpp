@@ -11,29 +11,31 @@ RfcommReceivePackage::RfcommReceivePackage() {
 	sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 }
 
+RfcommSendPackage::RfcommSendPackage() {
+	sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	currThreadNum = 0;
+}
+
 Bluetooth::Bluetooth()
 	: myAddr_(-1)
 {
-	setUp();
 }
 
 Bluetooth::Bluetooth(const deque<string>& addrs)
 	: myAddr_(-1), device_addressQ_(addrs)
 {
-	setUp();
 }
 
 Bluetooth::Bluetooth(const vector<string>& addrs)
 	: myAddr_(-1), device_addressQ_(addrs.begin(), addrs.end())
 {
-	setUp();
 }
 
 Bluetooth::~Bluetooth() {
-	close(send_sock_);
+	close(sendPack_.sock);
 	close(receivePack_.sock);
 
-	close(send_sock2_);
+	close(sendPack2_.sock);
 	close(receivePack2_.sock);
 }
 
@@ -50,11 +52,11 @@ int Bluetooth::send(int index, const string& msg) {
 
 	if (index < myAddr_) {
 		// send to lower index
-		status = rfcomm_send(send_sock2_, msg);
+		status = rfcomm_send(sendPack2_.sock, msg);
 	}
 	else if (index > myAddr_) {
 		// send to higher index
-		status = rfcomm_send(send_sock_, msg);
+		status = rfcomm_send(sendPack_.sock, msg);
 	}
 
 	// status <= 0: error
@@ -62,13 +64,14 @@ int Bluetooth::send(int index, const string& msg) {
 	return status;
 }
 
-bool Bluetooth::connect(const string& dest) {
-	return connect(find(dest));
+bool Bluetooth::connect(const string& dest, int currThreadNum) {
+	return connect(find(dest), currThreadNum);
 }
 
 
-bool Bluetooth::connect(int index) {
-	if (index == -1 || index == myAddr_) {
+bool Bluetooth::connect(int index, int currThreadNum) {
+	if (index < 0 || (unsigned)index >= device_addressQ_.size()
+		|| index == myAddr_) {
 		return false;
 	}
 
@@ -80,11 +83,13 @@ bool Bluetooth::connect(int index) {
 
 	if (index < myAddr_) {
 		// connect to lower index
-		status = initRfcommSend(send_sock2_, buffer);
+		status = initRfcommSend(sendPack2_.sock, buffer);
+		sendPack2_.currThreadNum = currThreadNum;
 	}
 	else if (index > myAddr_) {
 		// connect to higher index
-		status = initRfcommSend(send_sock_, buffer);
+		status = initRfcommSend(sendPack_.sock, buffer);
+		sendPack_.currThreadNum = currThreadNum;
 	}
 
 	delete buffer;
@@ -136,16 +141,6 @@ const string& Bluetooth::operator[](int loc) const {
 	return device_addressQ_.at(loc);
 }
 
-
-void Bluetooth::setUp() {
-	if (device_addressQ_.size() != 3 && myAddr_ < 0) {
-		return;
-	}
-
-	send_sock_ = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-	send_sock2_ = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-}
-
 int Bluetooth::find(const std::string& address) const {
 	int index = -1;
 	for (int i = 0; (unsigned)i < device_addressQ_.size(); i++) {
@@ -158,18 +153,41 @@ int Bluetooth::find(const std::string& address) const {
 	return index;
 }
 
+
+int Bluetooth::getCurrTheradNum(const std::string& dest) const {
+	return getCurrTheradNum(find(dest));
+}
+
+// @param index: index of the target device
+int Bluetooth::getCurrTheradNum(int index) const {
+	if (index < 0 || (unsigned)index >= device_addressQ_.size()
+		|| index == myAddr_) {
+		return false;
+	}
+
+	if (index < myAddr_) {
+		// connect to lower index
+		return sendPack2_.currThreadNum;
+	}
+	else if (index > myAddr_) {
+		// connect to higher index
+		return sendPack_.currThreadNum;
+	}
+
+	return -1;
+}
+
 int Bluetooth::getMyAddress() const {
 	return myAddr_;
 }
 
+void Bluetooth::setMyAddress(const string& address) {
+	setMyAddress(find(address));
+}
 
 void Bluetooth::setMyAddress(int myAddr) {
 	if (myAddr < 0 || (unsigned)myAddr >= device_addressQ_.size())
 		return;
 
 	myAddr_ = myAddr;
-}
-
-void Bluetooth::setMyAddress(const string& address) {
-	setMyAddress(find(address));
 }
