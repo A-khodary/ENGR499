@@ -6,13 +6,15 @@
 #include "shape_camera.h"
 #include "imu.h"
 #include "fansController.h"
-
+#include <mutex>
 #include <iostream>
 #include <thread>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 const int cameraDevice = 0;
+
+
 
 void RunQRCamera(Camera* camera)
 {
@@ -41,9 +43,9 @@ void RunShapeCamera(Camera* camera)
     }
 }
 
-void RunIMU()
+void RunIMU(struct imuInfo &data, std::mutex &imuDataMutex)
 {
-    IMUExecution();
+    IMUExecution(data, imuDataMutex);
 }
 
 void RunFans()
@@ -51,34 +53,54 @@ void RunFans()
     FanExecution();
 }
 
+void ReadData(struct imuInfo &data, std::mutex &imuDataMutex)
+{
+    while(1){	
+    	imuDataMutex.lock();
+    	printf("Pitch: %lf\r", data.pitch);
+	fflush(stdout);
+    	imuDataMutex.unlock();
+   }
+}
+
+
 int main()
 {
+    imuInfo imuData;
+    imuData.x=0;
+    imuData.y=0; 
+    imuData.z=0; 
+    imuData.roll=0; 
+    imuData.pitch=0; 
+    imuData.yaw=0;
+    std::mutex imuDataMutex;
     // Global camera object referenced by camera threads
-    Camera* camera = new Camera();
+    /*Camera* camera = new Camera();
     if (!camera->OpenVideoCap(cameraDevice))
     {
 	std::cout << "Video capture is not opened" << std::endl;
 	return 1;
     }
-    
+    */
     // Start the QR camera thread
-    std::thread qrCameraThread(RunQRCamera, camera);
+    //std::thread qrCameraThread(RunQRCamera, camera);
 
     // Start the Shape camera thread
-    std::thread shapeCameraThread(RunShapeCamera, camera);
+    //std::thread shapeCameraThread(RunShapeCamera, camera);
 
     // Start the IMU thread
-    std::thread imuThread(RunIMU);
-
+    std::thread imuThread(&RunIMU, std::ref(imuData), std::ref(imuDataMutex));
+    std::thread readDataThread(&ReadData, std::ref(imuData), std::ref(imuDataMutex));
     // Start the fan thread
-    std::thread fanThread(RunFans);
+    //std::thread fanThread(RunFans);
     
-    qrCameraThread.join();
-    shapeCameraThread.join();
+    //qrCameraThread.join();
+    //shapeCameraThread.join();
     imuThread.join();
-    fanThread.join();
+    readDataThread.join();
+    //fanThread.join();
 
-    delete camera;
+    //delete camera;
     
     return 0;
 }

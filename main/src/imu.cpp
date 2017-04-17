@@ -11,7 +11,7 @@
 using namespace std;
 
 void
-IMUExecution()
+IMUExecution(struct imuInfo &data, mutex &dataLock)
 {
   //Creates .ini File
   RTIMUSettings *settings = new RTIMUSettings("RTIMULib");
@@ -44,8 +44,8 @@ IMUExecution()
 
 
   ofstream dataFile;
-  dataFile.open("data.csv");
-  dataFile << "raX,raY,raZ,arX,arY,arZ,vrX,vrY,vrZ,prX,prY,prZ,gyroX,gyroY,gyroZ,compassX,compassY,compassZ" << endl;
+  dataFile.open("output/data.csv");
+  dataFile << "raX,raY,raZ,arX,arY,arZ,vrX,vrY,vrZ,prX,prY,prZ,fusionPoseX,fusionPoseY,fusionPoseZ" << endl;
   RTFusionRTQF fusion;
 
 
@@ -112,7 +112,15 @@ IMUExecution()
 		}
 	      RTVector3 gyro = imu->getGyro();
 	      RTVector3 compass = imu->getCompass();
-	      dataFile << accel.data(0) << "," << accel.data(1)<< "," << accel.data(2) << ","  << modifiedAccel[0] <<"," << modifiedAccel[1] << "," << modifiedAccel[2]<< "," << velresid[0] << "," << velresid[1] << "," << velresid[2] << "," << posresid[0] << "," << posresid[1] << "," << posresid[2] << "," << gyro.data(0) << "," << gyro.data(1) << "," << gyro.data(2) << "," << compass.data(0) << "," << compass.data(1) << "," << compass.data(2)<< "," << now << "," << prevnow<< "," << deltaTime << endl;
+	      dataFile << accel.data(0) << "," << accel.data(1)<< "," << accel.data(2) << ","  << modifiedAccel[0] <<"," << modifiedAccel[1] << "," << modifiedAccel[2]<< "," << velresid[0] << "," << velresid[1] << "," << velresid[2] << "," << posresid[0] << "," << posresid[1] << "," << posresid[2] << "," << imuData.fusionPose.x()*RTMATH_RAD_TO_DEGREE << "," << imuData.fusionPose.y()*RTMATH_RAD_TO_DEGREE << "," << imuData.fusionPose.z()*RTMATH_RAD_TO_DEGREE << "," << now << "," << prevnow<< "," << deltaTime << endl;
+	      dataLock.lock();
+	      data.x = posresid[0];
+	      data.y = posresid[1];
+	      data.z = posresid[2];
+	      data.roll = imuData.fusionPose.x()*RTMATH_RAD_TO_DEGREE;
+	      data.pitch = imuData.fusionPose.x()*RTMATH_RAD_TO_DEGREE;
+	      data.yaw = imuData.fusionPose.x()*RTMATH_RAD_TO_DEGREE;
+	      dataLock.unlock();
 	      //fflush(stdout);
 	    }
 	  else
@@ -122,8 +130,8 @@ IMUExecution()
 		{
 		  initaccelsum[i]+=accelResid.data(i);
 		}
-	      printf("Reading: %ld\r", (now - displayTimer));
-	      fflush(stdout);
+	      //printf("Reading: %ld\r", (now - displayTimer));
+	      //fflush(stdout);
 	    }
 	  prevnow=now;
 	  if((now - rateTimer) > 1000000)
