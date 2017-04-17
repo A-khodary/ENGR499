@@ -107,7 +107,6 @@ void runBluetoothSend(deque<string>& msgs, string dest,
 		cout << "false" << endl;
 		return;
 	}
-
 	cout << "true" << endl;
 
 
