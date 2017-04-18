@@ -9,6 +9,7 @@ extern "C" {
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <cmath>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -126,25 +127,23 @@ void moveX(int onPercent) {
 		moveBackward(onPercent);
 	}
 	else if (onPercent > 0) {
-		moveForward(onPercent);
+		moveForward(abs(onPercent));
 	}
 }
-
 void moveY(int onPercent) {
 	if(onPercent < 0) {
-		moveLeft(onPercent);
+		moveLeft(abs(onPercent));
 	}
 	else  if (onPercent > 0) {
-		moveRight(onPercent);
+		moveRight(abs(onPercent));
 	}
 }
-
 void rotate(int onPercent) {
 	//Max rotation amount? Deal with in controller?
 	if(onPercent < 0) {
 		turnCCW(onPercent);
 	} else if(onPercent > 0) {
-		turnCW(onPercent);
+		turnCW(abs(onPercent));
 	}
 }
 
