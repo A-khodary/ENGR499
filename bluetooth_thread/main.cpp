@@ -32,8 +32,8 @@ int main(int argc, char **argv)
 	cout << "My addresss is " << myAddr << endl;
 
 	deque<string> deviceBtAddrQ;
+	deviceBtAddrQ.push_back("00:04:4B:65:C3:75");
 	deviceBtAddrQ.push_back("00:04:4B:66:9F:3A");
-	deviceBtAddrQ.push_back("00:04:4B:65:BB:42");
 	//deviceBtAddrQ.push_back("00:00:00:00:00:00");
 
 	// check your own address
@@ -48,7 +48,8 @@ int main(int argc, char **argv)
 	deque<string> bufferQ;
 
 	vector<thread> sendThreads, receiveThreads;
-	for (int i = deviceBtAddrQ.size() - 1, j = 1; i >= 0 ; i++) {
+	// ISSUE: i++
+	for (int i = deviceBtAddrQ.size() - 1, j = 1; i >= 0 ; i--) {
 		if (i != bluetooth.getMyAddress()) {
 			sendThreads.push_back(thread(runBluetoothSend, ref(send_msgs), deviceBtAddrQ[i],
 				ref(bluetooth), j));
@@ -63,7 +64,9 @@ int main(int argc, char **argv)
 		lck.unlock();
 		cout << "> Say something <1 digit index num><msg>: ";
 		cin >> temp;
+		// ISSUE: better to cast?
 		int index = temp[0] - '0';
+		// ISSUE: Remove the first character
 		cout << "sending \"" << temp << "\" to #" << index << endl;
 
 		printf("Main: wake up sending thread\n");
