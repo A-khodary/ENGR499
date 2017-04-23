@@ -7,11 +7,13 @@ CTHREAD = -pthread
 FLAGS = -g -Wall
 TAILS = -lbluetooth
 
-all: $(BIN_DIR)/main $(BIN_DIR)/main $(BIN_DIR)/.dirstamp
+all: $(BIN_DIR)/main $(BIN_DIR)/.dirstamp
 
 $(BIN_DIR)/main: main.cpp 
 	$(CXX) $(FLAGS) $(CTHREAD) $< -o $@ $(TAILS)
 
+$(BIN_DIR)/mainBP: mainBP.cpp 
+	$(CXX) $(FLAGS) $(CTHREAD) $< -o $@ $(TAILS)
 
 .PHONY: clean
 clean:
