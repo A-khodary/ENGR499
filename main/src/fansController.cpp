@@ -28,10 +28,10 @@ void TurnFanOn(int onPercent, int i) {
     gpioExport(GPIOs[i]);
     gpioSetDirection(GPIOs[i], outputPin);
     for(int q =0; q < 100; q++) {
-		gpioSetValue(GPIOs[i], on);
-		usleep(onPercent*100);     
-		gpioSetValue(GPIOs[i], off);
-		usleep(offPercent*100);
+	gpioSetValue(GPIOs[i], on);
+	usleep(onPercent*100);     
+	gpioSetValue(GPIOs[i], off);
+	usleep(offPercent*100);
     }        
     gpioUnexport(GPIOs[i]);
 }
@@ -44,19 +44,19 @@ void TurnFanOff(int i) {
 void fanThread(int i) {
     //signal(SIGINT, SIG_IGN);
     while(1) {
-		// Wait until main() sends data
-		std::unique_lock<std::mutex> lock(fanMutex[i]);
-		fanCV[i].wait(lock);
-		if(fanPower[i] < 0) {
-			TurnFanOff(i);
-		}
-		// after the wait, we own the lock.
-		TurnFanOn(fanPower[i], i);
+	// Wait until main() sends data
+	std::unique_lock<std::mutex> lock(fanMutex[i]);
+	fanCV[i].wait(lock);
+	if(fanPower[i] < 0) {
+	    TurnFanOff(i);
+	}
+	// after the wait, we own the lock.
+	TurnFanOn(fanPower[i], i);
 		 
-		// Manual unlocking is done before notifying, to avoid waking up
-		// the waiting thread only to block again (see notify_one for details)
-		lock.unlock();
-		fanCV[i].notify_one();
+	// Manual unlocking is done before notifying, to avoid waking up
+	// the waiting thread only to block again (see notify_one for details)
+	lock.unlock();
+	fanCV[i].notify_one();
     }
 }
 
@@ -68,12 +68,12 @@ void wakeUpFanThread(int i) {
 void powerDown(int sig) {
     std::cout << "power down function!" << std::endl;
     for(int i = 0; i < 8; i++) {
-		fanPower[i] = -1;
-		wakeUpFanThread(i);
-		threads[i].join();
-		std::cout << "i = " << i << std::endl;
+	fanPower[i] = -1;
+	wakeUpFanThread(i);
+	threads[i].join();
+	std::cout << "i = " << i << std::endl;
     }
-	std::terminate();
+    std::terminate();
     exit(1);
 }
 //TODO: fine tune stopping? let controller deal with it?
@@ -123,54 +123,54 @@ void turnCW(int onPercent) {
 } 
 
 void moveX(int onPercent) {
-	if(onPercent < 0) {
-		moveBackward(onPercent);
-	}
-	else if (onPercent > 0) {
-		moveForward(abs(onPercent));
-	}
+    if(onPercent < 0) {
+	moveBackward(onPercent);
+    }
+    else if (onPercent > 0) {
+	moveForward(abs(onPercent));
+    }
 }
 void moveY(int onPercent) {
-	if(onPercent < 0) {
-		moveLeft(abs(onPercent));
-	}
-	else  if (onPercent > 0) {
-		moveRight(abs(onPercent));
-	}
+    if(onPercent < 0) {
+	moveLeft(abs(onPercent));
+    }
+    else  if (onPercent > 0) {
+	moveRight(abs(onPercent));
+    }
 }
 void rotate(int onPercent) {
-	//Max rotation amount? Deal with in controller?
-	if(onPercent < 0) {
-		turnCCW(onPercent);
-	} else if(onPercent > 0) {
-		turnCW(abs(onPercent));
-	}
+    //Max rotation amount? Deal with in controller?
+    if(onPercent < 0) {
+	turnCCW(onPercent);
+    } else if(onPercent > 0) {
+	turnCW(abs(onPercent));
+    }
 }
 
 void FanExecution() {
     int i;
-	std::count << "Starting fan threads, and testing all 8" << std::endl;
+    std::cout << "Starting fan threads, and testing all 8" << std::endl;
     for(i=0; i<8; i++) {
-		threads[i] = std::thread(fanThread, i);
+	threads[i] = std::thread(fanThread, i);
     }
-	for(i=0;i<8;i++) {
-		std::cout << "Turning in fan " + i + " at 50%" << std::endl;
-		fanPower[i] = 50;
-		wakeUpFanThread(i);
-		usleep(2000000);
-	}
+    for(i=0;i<8;i++) {
+	std::cout << "Turning in fan " << i << " at 50%" << std::endl;
+	fanPower[i] = 50;
+	wakeUpFanThread(i);
+	usleep(2000000);
+    }
 
-	//Will return to try and solve ctrl c or other quit command later, when we figure out combining everything?
-	/*
-    struct sigaction sigIntHandler;
-    sigIntHandler.sa_handler = powerDown;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = 0;
-    sigaction(SIGINT, &sigIntHandler, 0);
-	*/
+    //Will return to try and solve ctrl c or other quit command later, when we figure out combining everything?
+    /*
+      struct sigaction sigIntHandler;
+      sigIntHandler.sa_handler = powerDown;
+      sigemptyset(&sigIntHandler.sa_mask);
+      sigIntHandler.sa_flags = 0;
+      sigaction(SIGINT, &sigIntHandler, 0);
+    */
 
     usleep(1000000);
-	while(1) {}
+    while(1) {}
     std::cout << "All done!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
 }
