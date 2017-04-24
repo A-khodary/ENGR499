@@ -51,6 +51,8 @@ void ExecuteBluetooth(std::string myAddr)
 	index = 1;
     }
 
+    std::cout << "My index is: " << index << std::endl;
+
     //Create the receive threads first
     for (unsigned int i = 0; i < destinations.size(); i++) {
 	threads.push_back(std::thread(runBluetoothReceive) );
@@ -64,6 +66,8 @@ void ExecuteBluetooth(std::string myAddr)
 
     //This is just for testing purposes.
     //TODO: Need a message processing thread
+    std::cout << "Main sleep value for seconds: 10" << std::endl;
+    usleep(10000000);
     while (true) {
 	lck.unlock();
 	std::cout << "> Say something (one word): ";
@@ -204,7 +208,7 @@ void runBluetoothReceive() {
     while (true) {
 	memset( buf, 0, sizeof(buf) );
 	int bytes_read = read( client, buf, BUF_SIZE );
-	std::cout<<"byte read is "<<bytes_read<<std::endl;
+	std::cout<<"\nbyte read is "<<bytes_read<<std::endl;
 	if ( bytes_read > 0 ) {
 	    //Add the message to the message queue
 	    lck.lock();
@@ -217,5 +221,6 @@ void runBluetoothReceive() {
 	    bt_receive.notify_one();//Wake up the message handler that we have received a message
 	    lck.unlock();
 	}
+	std::cout << "> Say something (one word): " << std::flush;
     }
 }
