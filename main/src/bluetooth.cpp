@@ -38,12 +38,16 @@ void ExecuteBluetooth(std::string myAddr)
     std::string s = "00:04:4B:65:C3:75";
     if ( s != myAddr ) {
 	destinations.push_back(s);
+    }
+    else {
 	index = 0;
     }
     
     s = "00:04:4B:66:32:D9";
     if ( s != myAddr ) {
 	destinations.push_back(s);
+    }
+    else {
 	index = 1;
     }
 
@@ -112,7 +116,7 @@ void runBluetoothSend(int index) {
     //there seems to need to be at least 4 seconds between send
     //connection requests
     int value = 5000000 + 4000000 * index;
-    std::cout<<"random sleep value is "<<value<<std::endl;
+    std::cout<<"sleep value is "<<value<<std::endl;
     usleep(value);
     
     for ( unsigned int i=0; i<destinations.size(); i++ ) {
