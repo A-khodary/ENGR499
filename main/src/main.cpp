@@ -105,6 +105,7 @@ void ReadData(struct imuInfo &data, std::mutex &imuDataMutex, std::condition_var
 
 int main(int argc, char* argv[])
 {
+    /*
     imuInfo imuData;
     imuData.x=0;
     imuData.y=0; 
@@ -115,6 +116,8 @@ int main(int argc, char* argv[])
     imuData.yaw=0;
     std::mutex imuDataMutex;
     std::condition_variable writeDatacv;
+    */
+    
     // Global camera object referenced by camera threads
     /*Camera* camera = new Camera();
       if (!camera->OpenVideoCap(cameraDevice))
