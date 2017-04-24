@@ -16,7 +16,7 @@
 #include <stdlib.h>
 
 void runBluetoothReceive();
-void runBluetoothSend();
+void runBluetoothSend(int index);
 
 std::mutex mtx;
 std::condition_variable bt_send;
@@ -32,15 +32,19 @@ void ExecuteBluetooth(std::string myAddr)
     srand(time(nullptr));
 
     std::cout << "My addresss is " << myAddr << std::endl;
+
+    int index;
     
     std::string s = "00:04:4B:65:C3:75";
     if ( s != myAddr ) {
 	destinations.push_back(s);
+	index = 0;
     }
     
     s = "00:04:4B:66:32:D9";
     if ( s != myAddr ) {
 	destinations.push_back(s);
+	index = 1;
     }
 
     //Create the receive threads first
@@ -49,7 +53,7 @@ void ExecuteBluetooth(std::string myAddr)
     }
 
     //We only need one send thread as we are broadcasting to all other robots
-    threads.push_back(std::thread(runBluetoothSend));
+    threads.push_back(std::thread(runBluetoothSend, index));
     
     std::unique_lock<std::mutex> lck(mtx);
     std::string temp;
@@ -96,7 +100,7 @@ int getConnection(const char* dest) {
     return s;
 }
 
-void runBluetoothSend() {
+void runBluetoothSend(int index) {
     //Get a connection for each of the destinations
     int status;
     std::vector<int> connections;
@@ -107,7 +111,7 @@ void runBluetoothSend() {
     //send connection requests at the same time. Through experimenting
     //there seems to need to be at least 4 seconds between send
     //connection requests
-    int value = 5000000 + 4000000 * (rand()%10);
+    int value = 5000000 + 4000000 * index;
     std::cout<<"random sleep value is "<<value<<std::endl;
     usleep(value);
     
