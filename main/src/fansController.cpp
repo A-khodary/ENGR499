@@ -16,14 +16,14 @@ extern "C" {
 #include <signal.h>
 
 // 1 = pin 32, 2 = pin 16, 3 = pin 13, 4 = pin 33, 5 = pin 18, 6 = pin 31, 7 = pin 37, 8 = pin 29
-jetsonTX1GPIONumber GPIOs[8] = {gpio36, gpio37, gpio38, gpio63, gpio184, gpio186, gpio187, gpio219};
+jetsonTX1GPIONumber GPIOs[6] = {gpio36, gpio37, gpio38, gpio63, gpio184, gpio187};
 
-std::thread threads[8];
-int fanPower[8];
-std::mutex fanMutex[8];
-std::condition_variable fanCV[8];
+std::thread threads[6];
+int power[6];
+std::mutex signalMutex[6];
+std::condition_variable signalCV[6];
 
-void TurnFanOn(int onPercent, int i) {
+void TurnSignalOn(int onPercent, int i) {
     int offPercent = 100-onPercent;
     gpioExport(GPIOs[i]);
     gpioSetDirection(GPIOs[i], outputPin);
@@ -36,90 +36,69 @@ void TurnFanOn(int onPercent, int i) {
     gpioUnexport(GPIOs[i]);
 }
 
-void TurnFanOff(int i) {
+void TurnOffGPIO(int i) {
     gpioSetValue(GPIOs[i], off);
     gpioUnexport(GPIOs[i]);
 }
 
-void fanThread(int i) {
-    //signal(SIGINT, SIG_IGN);
+void signalThread(int i) {
     while(1) {
 		// Wait until main() sends data
-		std::unique_lock<std::mutex> lock(fanMutex[i]);
-		fanCV[i].wait(lock);
-		if(fanPower[i] < 0) {
-			TurnFanOff(i);
+		std::unique_lock<std::mutex> lock(signalMutex[i]);
+		signalCV[i].wait(lock);
+		if(power[i] < 0) {
+			TurnOffGPIO(i);
 		}
 		// after the wait, we own the lock.
-		TurnFanOn(fanPower[i], i);
-		 
+		TurnSignalOn(power[i], i);
 		// Manual unlocking is done before notifying, to avoid waking up
 		// the waiting thread only to block again (see notify_one for details)
 		lock.unlock();
-		fanCV[i].notify_one();
+		signalCV[i].notify_one();
     }
 }
 
-void wakeUpFanThread(int i) {
-    std::lock_guard<std::mutex> lock(fanMutex[i]);  //acquire lock
-    fanCV[i].notify_one(); //notify one
+void wakeUpSignalThread(int i) {
+    std::lock_guard<std::mutex> lock(signalMutex[i]);  //acquire lock
+    signalCV[i].notify_one(); //notify one
 }
 
-void powerDown(int sig) {
-    std::cout << "power down function!" << std::endl;
-    for(int i = 0; i < 8; i++) {
-		fanPower[i] = -1;
-		wakeUpFanThread(i);
-		threads[i].join();
-		std::cout << "i = " << i << std::endl;
-    }
-	std::terminate();
-    exit(1);
-}
 //TODO: fine tune stopping? let controller deal with it?
 void moveForward(int onPercent) {
-    fanPower[0] = onPercent;
-    fanPower[5] = onPercent;
-    wakeUpFanThread(0);
-    wakeUpFanThread(5);
+    power[0] = onPercent;
+    power[5] = onPercent;
+    wakeUpSignalThread(0);
+    wakeUpSignalThread(5);
 }
 void moveBackward(int onPercent) {
-    fanPower[1] = onPercent;
-    fanPower[4] = onPercent;
-    wakeUpFanThread(1);
-    wakeUpFanThread(4);
+    power[1] = onPercent;
+    power[4] = onPercent;
+    wakeUpSignalThread(1);
+    wakeUpSignalThread(4);
 }
 void moveLeft(int onPercent) {
-    fanPower[3] = onPercent;
-    fanPower[6] = onPercent;
-    wakeUpFanThread(3);
-    wakeUpFanThread(6);
+    power[3] = onPercent;
+    power[6] = onPercent;
+    wakeUpSignalThread(3);
+    wakeUpSignalThread(6);
 }
 void moveRight(int onPercent) {
-    fanPower[2] = onPercent;
-    fanPower[7] = onPercent;
-    wakeUpFanThread(2);
-    wakeUpFanThread(7);
+    power[2] = onPercent;
+    power[7] = onPercent;
+    wakeUpSignalThread(2);
+    wakeUpSignalThread(7);
 }
 void turnCCW(int onPercent) {
-    fanPower[0] = onPercent;
-    fanPower[2] = onPercent;
-    fanPower[4] = onPercent;
-    fanPower[6] = onPercent;
-    wakeUpFanThread(0);
-    wakeUpFanThread(2);
-    wakeUpFanThread(4);
-    wakeUpFanThread(6);
+    power[0] = onPercent;
+    power[4] = onPercent;
+    wakeUpSignalThread(0);
+    wakeUpSignalThread(4);
 }
 void turnCW(int onPercent) {
-    fanPower[1] = onPercent;
-    fanPower[3] = onPercent;
-    fanPower[5] = onPercent;
-    fanPower[7] = onPercent;
-    wakeUpFanThread(1);
-    wakeUpFanThread(3);
-    wakeUpFanThread(5);
-    wakeUpFanThread(7);
+    power[1] = onPercent;
+    power[5] = onPercent;
+    wakeUpSignalThread(1);
+    wakeUpSignalThread(5);
 } 
 
 void moveX(int onPercent) {
@@ -139,7 +118,6 @@ void moveY(int onPercent) {
 	}
 }
 void rotate(int onPercent) {
-	//Max rotation amount? Deal with in controller?
 	if(onPercent < 0) {
 		turnCCW(onPercent);
 	} else if(onPercent > 0) {
@@ -149,29 +127,32 @@ void rotate(int onPercent) {
 
 void FanExecution() {
     int i;
-	std::count << "Starting fan threads, and testing all 8" << std::endl;
-    for(i=0; i<8; i++) {
-		threads[i] = std::thread(fanThread, i);
+	std::count << "Starting signal threads, and testing all 6" << std::endl;
+    for(i=0; i<6; i++) {
+		threads[i] = std::thread(signalThread, i);
     }
-	for(i=0;i<8;i++) {
-		std::cout << "Turning in fan " + i + " at 50%" << std::endl;
-		fanPower[i] = 50;
-		wakeUpFanThread(i);
-		usleep(2000000);
-	}
+	int onPercent = 50;
+	std::cout << "moveForward at 50%" << std::endl;
+	moveForward(onPercent);
+	usleep(1000000);
+	std::cout << "moveBackward at 50%" << std::endl;
+	moveBackward(onPercent);
+	usleep(1000000);
+	std::cout << "moveLeft at 50%" << std::endl;
+	moveLeft(onPercent);
+	usleep(1000000);
+	std::cout << "moveRight at 50%" << std::endl;
+	moveRight(onPercent);
+	usleep(1000000);
+	std::cout << "turnCW at 50%" << std::endl;
+	turnCW(onPercent);
+	usleep(1000000);
+	std::cout << "turnCCW at 50%" << std::endl;
+	turnCCW(onPercent);
+	usleep(1000000);
+	
 
-	//Will return to try and solve ctrl c or other quit command later, when we figure out combining everything?
-	/*
-    struct sigaction sigIntHandler;
-    sigIntHandler.sa_handler = powerDown;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = 0;
-    sigaction(SIGINT, &sigIntHandler, 0);
-	*/
-
-    usleep(1000000);
 	while(1) {}
-    std::cout << "All done!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
 }
 
