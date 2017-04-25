@@ -28,10 +28,10 @@ void TurnSignalOn(int onPercent, int i) {
     gpioExport(GPIOs[i]);
     gpioSetDirection(GPIOs[i], outputPin);
     for(int q =0; q < 100; q++) {
-		gpioSetValue(GPIOs[i], on);
-		usleep(onPercent*100);     
-		gpioSetValue(GPIOs[i], off);
-		usleep(offPercent*100);
+	gpioSetValue(GPIOs[i], on);
+	usleep(onPercent*100);     
+	gpioSetValue(GPIOs[i], off);
+	usleep(offPercent*100);
     }        
     gpioUnexport(GPIOs[i]);
 }
@@ -102,20 +102,20 @@ void turnCW(int onPercent) {
 } 
 
 void moveX(int onPercent) {
-	if(onPercent < 0) {
-		moveBackward(onPercent);
-	}
-	else if (onPercent > 0) {
-		moveForward(abs(onPercent));
-	}
+    if(onPercent < 0) {
+	moveBackward(onPercent);
+    }
+    else if (onPercent > 0) {
+	moveForward(abs(onPercent));
+    }
 }
 void moveY(int onPercent) {
-	if(onPercent < 0) {
-		moveLeft(abs(onPercent));
-	}
-	else  if (onPercent > 0) {
-		moveRight(abs(onPercent));
-	}
+    if(onPercent < 0) {
+	moveLeft(abs(onPercent));
+    }
+    else  if (onPercent > 0) {
+	moveRight(abs(onPercent));
+    }
 }
 void rotate(int onPercent) {
 	if(onPercent < 0) {

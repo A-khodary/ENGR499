@@ -1,2 +1,2 @@
 mkdir -p output
-sudo ./build/run
+sudo ./build/run $(./scripts/getMyBtAddr.sh)
