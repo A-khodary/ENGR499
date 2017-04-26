@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
 
     
     // Start the Bluetooth thread
-    std::thread bluetoothThread(RunBluetooth, argv[1]);
+    //std::thread bluetoothThread(RunBluetooth, argv[1]);
 	
     // Start the QR camera thread
     //std::thread qrCameraThread(RunQRCamera, camera);
@@ -145,14 +145,14 @@ int main(int argc, char* argv[])
     //			       std::ref(writeDatacv));
     
     // Start the fan thread
-    //std::thread fanThread(RunFans);
+    std::thread fanThread(RunFans);
 
-    bluetoothThread.join();
+    //bluetoothThread.join();
     //qrCameraThread.join();
     //shapeCameraThread.join();
     //imuThread.join();
     //readDataThread.join();
-    //fanThread.join();
+    fanThread.join();
 
     //delete camera;
     

@@ -27,7 +27,7 @@ void TurnSignalOn(int onPercent, int i) {
     int offPercent = 100-onPercent;
     gpioExport(GPIOs[i]);
     gpioSetDirection(GPIOs[i], outputPin);
-    for(int q =0; q < 100; q++) {
+    for(int q =0; q < 1000; q++) {
 	gpioSetValue(GPIOs[i], on);
 	usleep(onPercent*100);     
 	gpioSetValue(GPIOs[i], off);
@@ -66,39 +66,39 @@ void wakeUpSignalThread(int i) {
 //TODO: fine tune stopping? let controller deal with it?
 void moveForward(int onPercent) {
     power[0] = onPercent;
-    power[5] = onPercent;
+    //power[5] = onPercent;
     wakeUpSignalThread(0);
-    wakeUpSignalThread(5);
+    //wakeUpSignalThread(5);
 }
 void moveBackward(int onPercent) {
     power[1] = onPercent;
-    power[4] = onPercent;
+    //power[4] = onPercent;
     wakeUpSignalThread(1);
-    wakeUpSignalThread(4);
+    //wakeUpSignalThread(4);
 }
 void moveLeft(int onPercent) {
-    power[3] = onPercent;
-    power[6] = onPercent;
-    wakeUpSignalThread(3);
-    wakeUpSignalThread(6);
+    power[2] = onPercent;
+    //power[6] = onPercent;
+    wakeUpSignalThread(2);
+    //wakeUpSignalThread(6);
 }
 void moveRight(int onPercent) {
-    power[2] = onPercent;
-    power[7] = onPercent;
-    wakeUpSignalThread(2);
-    wakeUpSignalThread(7);
+    power[3] = onPercent;
+    //power[7] = onPercent;
+    wakeUpSignalThread(3);
+    //wakeUpSignalThread(7);
 }
 void turnCCW(int onPercent) {
-    power[0] = onPercent;
-    power[4] = onPercent;
-    wakeUpSignalThread(0);
-    wakeUpSignalThread(4);
+    //power[0] = onPercent;
+    power[5] = onPercent;
+    //wakeUpSignalThread(0);
+    wakeUpSignalThread(5);
 }
 void turnCW(int onPercent) {
-    power[1] = onPercent;
-    power[5] = onPercent;
-    wakeUpSignalThread(1);
-    wakeUpSignalThread(5);
+    //power[1] = onPercent;
+    power[4] = onPercent;
+    //wakeUpSignalThread(1);
+    wakeUpSignalThread(4);
 } 
 
 void moveX(int onPercent) {
@@ -127,16 +127,18 @@ void rotate(int onPercent) {
 
 void FanExecution() {
     int i;
-	std::count << "Starting signal threads, and testing all 6" << std::endl;
+	std::cout << "Starting signal threads, and testing all 6" << std::endl;
     for(i=0; i<6; i++) {
 		threads[i] = std::thread(signalThread, i);
     }
+
 	int onPercent = 50;
+	/*
 	std::cout << "moveForward at 50%" << std::endl;
-	moveForward(onPercent);
+	moveForward(-onPercent);
 	usleep(1000000);
 	std::cout << "moveBackward at 50%" << std::endl;
-	moveBackward(onPercent);
+	moveBackward(-onPercent);
 	usleep(1000000);
 	std::cout << "moveLeft at 50%" << std::endl;
 	moveLeft(onPercent);
@@ -144,13 +146,15 @@ void FanExecution() {
 	std::cout << "moveRight at 50%" << std::endl;
 	moveRight(onPercent);
 	usleep(1000000);
+*/
 	std::cout << "turnCW at 50%" << std::endl;
 	turnCW(onPercent);
 	usleep(1000000);
+/*
 	std::cout << "turnCCW at 50%" << std::endl;
 	turnCCW(onPercent);
 	usleep(1000000);
-	
+	*/
 
 	while(1) {}
 
